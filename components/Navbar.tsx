@@ -1,15 +1,15 @@
 'use client'
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTheme } from './ThemeProvider'
 import { useState, useEffect } from 'react'
 
 const Navbar = () => {
-  const pathname = usePathname()
+  const location = useLocation()
+  const navigate = useNavigate()
   const { theme, toggleTheme } = useTheme()
   const [isScrolled, setIsScrolled] = useState(false)
-  const isHomePage = pathname === '/'
+  const isHomePage = location.pathname === '/'
 
   useEffect(() => {
     const handleScroll = () => {
@@ -30,7 +30,9 @@ const Navbar = () => {
     if (isHomePage) {
       scrollToSection(sectionId)
     } else {
-      window.location.href = href
+      navigate("/")
+      // Wait for the home page to mount, then scroll.
+      setTimeout(() => scrollToSection(sectionId), 50)
     }
   }
 
@@ -53,7 +55,7 @@ const Navbar = () => {
       }`}>
         <div className="flex justify-between items-center">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2">
             <div className="w-7 h-7 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
               <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -103,7 +105,7 @@ const Navbar = () => {
 
             {/* Start Chat Button */}
             <Link 
-              href="/chat" 
+              to="/chat" 
               className={`bg-emerald-600 text-white font-semibold rounded-full hover:bg-emerald-700 transition shadow-lg hover:shadow-xl ${
                 isScrolled ? 'px-4 py-2 text-sm' : 'px-5 py-2 text-sm'
               }`}

@@ -2,6 +2,13 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+@import "@fontsource/geist-sans/latin.css";
+@import "@fontsource/geist-mono/latin.css";
+@import "@fontsource/pt-serif/400.css";
+@import "@fontsource/pt-serif/700.css";
+@import "@fontsource/lobster-two/400.css";
+@import "@fontsource/lobster-two/700.css";
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -48,6 +55,11 @@
 }
 
 :root {
+  --font-geist-sans: "Geist Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-geist-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-pt-serif: "PT Serif", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-lobster-two: "Lobster Two", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);

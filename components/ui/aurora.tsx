@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { forwardRef } from "react"
+import { forwardRef, useEffect, useMemo, useState } from "react"
 import { Shader } from "react-shaders"
 import { cn } from "@/lib/utils"
 
@@ -156,19 +156,51 @@ export const AuroraShaders = forwardRef<HTMLDivElement, AuroraShadersProps>(
     },
     ref,
   ) => {
+    const [webglOk, setWebglOk] = useState(true)
+
+    useEffect(() => {
+      try {
+        const canvas = document.createElement("canvas")
+        const gl =
+          canvas.getContext("webgl") || canvas.getContext("experimental-webgl")
+        setWebglOk(!!gl)
+      } catch {
+        setWebglOk(false)
+      }
+    }, [])
+
+    const fallbackStyle = useMemo<React.CSSProperties>(
+      () => ({
+        width: "100%",
+        height: "100%",
+        background:
+          "radial-gradient(1200px 800px at 20% 30%, rgba(16,185,129,0.30), transparent 60%)," +
+          "radial-gradient(900px 700px at 70% 40%, rgba(59,130,246,0.22), transparent 60%)," +
+          "radial-gradient(900px 700px at 55% 70%, rgba(168,85,247,0.18), transparent 65%)," +
+          "linear-gradient(180deg, rgba(255,255,255,0.0) 0%, rgba(255,255,255,0.0) 50%, rgba(255,255,255,0.0) 100%)",
+        filter: "blur(0px)",
+        opacity: 1,
+      }),
+      [],
+    )
+
     return (
       <div className={cn("w-full h-full", className)} ref={ref} {...(props as any)}>
-        <Shader
-          fs={auroraShader}
-          style={{ width: "100%", height: "100%" } as CSSStyleDeclaration}
-          uniforms={{
-            u_speed: { type: "1f", value: speed },
-            u_intensity: { type: "1f", value: intensity },
-            u_vibrancy: { type: "1f", value: vibrancy },
-            u_frequency: { type: "1f", value: frequency },
-            u_stretch: { type: "1f", value: stretch },
-          }}
-        />
+        {webglOk ? (
+          <Shader
+            fs={auroraShader}
+            style={{ width: "100%", height: "100%" } as CSSStyleDeclaration}
+            uniforms={{
+              u_speed: { type: "1f", value: speed },
+              u_intensity: { type: "1f", value: intensity },
+              u_vibrancy: { type: "1f", value: vibrancy },
+              u_frequency: { type: "1f", value: frequency },
+              u_stretch: { type: "1f", value: stretch },
+            }}
+          />
+        ) : (
+          <div style={fallbackStyle} />
+        )}
       </div>
     )
   },
