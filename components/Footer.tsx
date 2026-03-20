@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import { useState } from 'react'
 
 export default function Footer() {
@@ -56,12 +55,12 @@ export default function Footer() {
             <ul className="space-y-3">
               {['Features', 'Pricing', 'Security', 'Integrations', 'API'].map((item) => (
                 <li key={item}>
-                  <Link 
+                  <a 
                     href="#" 
                     className="text-gray-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors duration-200 inline-block hover:translate-x-1 transform"
                   >
                     {item}
-                  </Link>
+                  </a>
                 </li>
               ))}
             </ul>
@@ -73,12 +72,12 @@ export default function Footer() {
             <ul className="space-y-3">
               {['About', 'Blog', 'Careers', 'Press', 'Partners'].map((item) => (
                 <li key={item}>
-                  <Link 
+                  <a 
                     href="#" 
                     className="text-gray-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors duration-200 inline-block hover:translate-x-1 transform"
                   >
                     {item}
-                  </Link>
+                  </a>
                 </li>
               ))}
             </ul>
@@ -117,13 +116,13 @@ export default function Footer() {
             </p>
             <div className="flex gap-6">
               {['Privacy Policy', 'Terms of Service', 'Cookie Policy'].map((item) => (
-                <Link
+                <a
                   key={item}
                   href="#"
                   className="text-gray-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 text-sm transition-colors duration-200"
                 >
                   {item}
-                </Link>
+                </a>
               ))}
             </div>
           </div>

@@ -1,4 +1,17 @@
-import Link from 'next/link'
+import { Link } from "react-router-dom";
+import {
+  AlertTriangle,
+  BookOpenText,
+  ClipboardList,
+  FileSearch,
+  FlaskConical,
+  MessageCircle,
+  ShieldCheck,
+  GraduationCap,
+  Pill,
+  ShieldAlert,
+  Bot,
+} from "lucide-react";
 import Footer from './Footer'
 
 export default function LandingPage() {
@@ -15,7 +28,7 @@ export default function LandingPage() {
             Have your personal health assistant work for you.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
-            <Link href="/chat" className="bg-emerald-600 text-white dark:text-gray-900 px-8 py-4 rounded-full text-base font-medium hover:opacity-90 transition">
+            <Link to="/chat" className="bg-emerald-600 text-white dark:text-gray-900 px-8 py-4 rounded-full text-base font-medium hover:opacity-90 transition">
               Get Started
             </Link>
           </div>
@@ -51,62 +64,46 @@ export default function LandingPage() {
           {[
             { 
               title: 'Allergy Checker', 
-              desc: 'Instantly check food and medication allergies against your profile',
-              icon: (
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              )
+              desc: 'Flag common allergy risks for medications and ingredients.',
+              Icon: ShieldCheck,
             },
             { 
               title: 'Drug Interactions', 
-              desc: 'Get warnings about potential medication interactions',
-              icon: (
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-              )
+              desc: 'Spot risky combinations with prescriptions and OTC meds.',
+              Icon: FlaskConical,
             },
             { 
-              title: 'Dietary Guidance', 
-              desc: 'Personalized nutrition advice based on your health goals',
-              icon: (
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              )
+              title: 'Drug Information Lookup',
+              desc: 'Uses, dosage, side effects, warnings — in one place.',
+              Icon: FileSearch,
             },
             { 
               title: 'Symptom Analysis', 
-              desc: 'AI-powered symptom checker with medical insights',
-              icon: (
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
-              )
+              desc: 'Understand symptoms and when to seek medical help.',
+              Icon: ClipboardList,
             },
             { 
-              title: 'Health Tracking', 
-              desc: 'Monitor vitals, medications, and health metrics over time',
-              icon: (
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-              )
+              title: 'Emergency Guidance',
+              desc: 'Quick steps for overdose or severe reactions.',
+              Icon: AlertTriangle,
             },
             { 
               title: 'AI Consultation', 
-              desc: '24/7 access to AI-powered medical consultation',
-              icon: (
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-              )
+              desc: 'Ask questions in plain language, anytime you’re unsure.',
+              Icon: MessageCircle,
+            },
+            {
+              title: "Drug Categories",
+              desc: "Browse by pain relief, antibiotics, cold & flu, and more.",
+              Icon: BookOpenText,
             }
           ].map((feature) => (
-            <div key={feature.title} className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700 hover:border-emerald-500 dark:hover:border-emerald-500 transition">
+            <div
+              key={feature.title}
+              className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700 transition will-change-transform hover:scale-[1.01] hover:border-emerald-500/70 dark:hover:border-emerald-400/60 hover:shadow-[0_0_0_1px_rgba(16,185,129,0.20)]"
+            >
               <div className="text-emerald-600 dark:text-emerald-400 mb-4">
-                {feature.icon}
+                <feature.Icon className="w-8 h-8" aria-hidden="true" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{feature.title}</h3>
               <p className="text-gray-600 dark:text-gray-300">{feature.desc}</p>
@@ -114,8 +111,12 @@ export default function LandingPage() {
           ))}
         </div>
 
+        <p className="text-center text-sm text-gray-500 dark:text-gray-400 -mt-6 mb-12 max-w-3xl mx-auto">
+          This platform provides general medical information and does not replace professional medical advice.
+        </p>
+
         <div className="text-center">
-          <Link href="/chat" className="inline-block bg-emerald-600 text-white px-8 py-3 rounded-full text-base font-medium hover:bg-emerald-700 transition">
+          <Link to="/chat" className="inline-block bg-emerald-600 text-white px-8 py-3 rounded-full text-base font-medium hover:bg-emerald-700 transition">
             Try All Features
           </Link>
         </div>
@@ -218,23 +219,53 @@ export default function LandingPage() {
 
       {/* Use Cases */}
       <section className="max-w-6xl mx-auto px-6 py-20">
-        <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 dark:text-white mb-16 leading-tight font-pt-serif">
-          For Everyone Who Cares About Their Health
-        </h2>
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4 leading-tight font-pt-serif">
+            Built for Students Who Need Fast & Safe Medical Guidance
+          </h2>
+          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+            Helping students make informed decisions about medications without unnecessary trips to the pharmacy.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
-            { title: 'Patients', desc: 'Manage chronic conditions and medications' },
-            { title: 'Parents', desc: 'Keep family health records organized' },
-            { title: 'Caregivers', desc: 'Coordinate care for loved ones' },
-            { title: 'Athletes', desc: 'Track performance and recovery' },
-            { title: 'Seniors', desc: 'Easy access to health information' },
-            { title: 'Health Enthusiasts', desc: 'Optimize wellness with AI' }
+            { 
+              title: 'Students', 
+              desc: 'Quickly access drug information for common illnesses on campus.',
+              Icon: GraduationCap
+            },
+            { 
+              title: 'Self-Medication Support', 
+              desc: 'Get guidance on what medications to take for minor health issues.',
+              Icon: Pill
+            },
+            { 
+              title: 'Safe Drug Usage', 
+              desc: 'Avoid harmful drug combinations and incorrect dosage.',
+              Icon: ShieldAlert
+            },
+            { 
+              title: 'AI Assistance', 
+              desc: 'Ask health-related questions and get instant AI-powered responses.',
+              Icon: Bot
+            }
           ].map((item) => (
-            <div key={item.title} className="p-6">
+            <div 
+              key={item.title} 
+              className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_15px_rgba(16,185,129,0.15)] dark:hover:shadow-[0_0_15px_rgba(16,185,129,0.2)] hover:border-emerald-500/50 dark:hover:border-emerald-400/50"
+            >
+              <div className="text-emerald-600 dark:text-emerald-400 mb-4">
+                <item.Icon className="w-8 h-8" aria-hidden="true" />
+              </div>
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{item.title}</h3>
-              <p className="text-gray-600 dark:text-gray-400">{item.desc}</p>
+              <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{item.desc}</p>
             </div>
           ))}
+        </div>
+
+        <div className="mt-12 text-center text-sm text-gray-500 dark:text-gray-400 max-w-3xl mx-auto">
+          Disclaimer: This platform provides general medical guidance and does not replace professional healthcare advice.
         </div>
       </section>
 
@@ -247,8 +278,8 @@ export default function LandingPage() {
           <p className="text-lg text-gray-600 dark:text-gray-400 mb-12 max-w-2xl mx-auto">
             Your entire health journey, in one place.
           </p>
-          <Link href="/chat" className="inline-block bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-10 py-5 rounded-full text-lg font-medium hover:opacity-90 transition">
-            Get Started Free
+          <Link to="/chat" className="inline-block bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-10 py-5 rounded-full text-lg font-medium hover:opacity-90 transition">
+            Try AI Chat
           </Link>
           <p className="text-sm text-gray-500 dark:text-gray-500 mt-6">
             We are HIPAA compliant and available 24/7
@@ -319,7 +350,7 @@ export default function LandingPage() {
                 ))}
               </ul>
               <Link 
-                href="/chat" 
+                to="/chat" 
                 className={`block w-full text-center px-6 py-3 rounded-lg font-medium transition ${
                   plan.popular
                     ? 'bg-emerald-600 text-white hover:bg-emerald-700'
