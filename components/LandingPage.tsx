@@ -116,7 +116,7 @@ export default function LandingPage() {
         </p>
 
         <div className="text-center">
-          <Link to="/chat" className="inline-block bg-emerald-600 text-white px-8 py-3 rounded-full text-base font-medium hover:bg-emerald-700 transition">
+          <Link to="/chat" className="inline-block bg-emerald-600 text-white dark:text-gray-900 px-8 py-4 rounded-full text-base font-medium hover:opacity-90 transition">
             Try All Features
           </Link>
         </div>
@@ -278,7 +278,7 @@ export default function LandingPage() {
           <p className="text-lg text-gray-600 dark:text-gray-400 mb-12 max-w-2xl mx-auto">
             Your entire health journey, in one place.
           </p>
-          <Link to="/chat" className="inline-block bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-10 py-5 rounded-full text-lg font-medium hover:opacity-90 transition">
+          <Link to="/chat" className="inline-block bg-emerald-600 text-white dark:text-gray-900 px-8 py-4 rounded-full text-base font-medium hover:opacity-90 transition">
             Try AI Chat
           </Link>
           <p className="text-sm text-gray-500 dark:text-gray-500 mt-6">
@@ -321,11 +321,7 @@ export default function LandingPage() {
           ].map((plan) => (
             <div 
               key={plan.name} 
-              className={`bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-8 border-2 transition ${
-                plan.popular 
-                  ? 'border-emerald-500 dark:border-emerald-500 shadow-xl scale-105' 
-                  : 'border-gray-200 dark:border-gray-700'
-              }`}
+              className="group bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-8 border-2 border-gray-200 dark:border-gray-700 transition-all duration-300 hover:shadow-[0_0_15px_rgba(16,185,129,0.15)] dark:hover:shadow-[0_0_15px_rgba(16,185,129,0.2)] hover:border-emerald-500/50 dark:hover:border-emerald-400/50 hover:scale-[1.03]"
             >
               {plan.popular && (
                 <div className="text-center mb-4">
@@ -349,16 +345,11 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-              <Link 
-                to="/chat" 
-                className={`block w-full text-center px-6 py-3 rounded-lg font-medium transition ${
-                  plan.popular
-                    ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600'
-                }`}
+              <button 
+                className="block w-full text-center px-6 py-3 rounded-lg font-medium transition-colors duration-300 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white group-hover:bg-emerald-600 group-hover:text-white hover:!bg-emerald-700"
               >
                 Get Started
-              </Link>
+              </button>
             </div>
           ))}
         </div>
