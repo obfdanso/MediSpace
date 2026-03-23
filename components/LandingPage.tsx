@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import type { Variants } from "framer-motion";
 import {
   AlertTriangle,
   BookOpenText,
@@ -14,52 +16,90 @@ import {
 } from "lucide-react";
 import Footer from './Footer'
 
+const fadeUp: Variants = {
+  hidden: { opacity: 0, y: 40 },
+  visible: (i: number = 0) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, delay: i * 0.1, ease: "easeOut" }
+  })
+}
+
+const fadeIn: Variants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.8, ease: "easeOut" } }
+}
+
 export default function LandingPage() {
   return (
     <div className="min-h-screen">
+
       {/* Hero Section */}
       <section id="home" className="max-w-6xl mx-auto px-6 pt-40 pb-24 scroll-mt-20">
         <div className="text-center">
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white mb-8 leading-tight tracking-tight font-pt-serif">
+          <motion.h1
+            variants={fadeUp}
+            initial="hidden"
+            animate="visible"
+            className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white mb-8 leading-tight tracking-tight font-pt-serif"
+          >
             Your entire health journey in one place
-          </h1>
-          <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400 mb-12 max-w-3xl mx-auto">
-            Add your medical records and health data. Get AI-powered insights. 
+          </motion.h1>
+          <motion.p
+            variants={fadeUp}
+            initial="hidden"
+            animate="visible"
+            custom={1}
+            className="text-lg md:text-xl text-gray-600 dark:text-gray-400 mb-12 max-w-3xl mx-auto"
+          >
+            Add your medical records and health data. Get AI-powered insights.
             Have your personal health assistant work for you.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
-            <button type="button" className="bg-emerald-600 text-white dark:text-gray-900 px-8 py-4 rounded-full text-base font-medium transition-all duration-300 hover:scale-105 hover:shadow-[0_0_25px_rgba(16,185,129,0.4)] cursor-default">
+            <Link to="/chat" className="bg-emerald-600 text-white dark:text-gray-900 px-8 py-4 rounded-full text-base font-medium hover:opacity-90 transition">
               Get Started
-            </button>
+            </Link>
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-500">
             We are HIPAA compliant and available 24/7
-          </p>
+          </motion.p>
         </div>
       </section>
 
       {/* Subheading */}
-      <section className="max-w-5xl mx-auto px-6 py-20">
+      <motion.section
+        variants={fadeUp}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.3 }}
+        className="max-w-5xl mx-auto px-6 py-20"
+      >
         <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center text-gray-900 dark:text-white leading-tight mb-6 font-pt-serif">
           AI Is Better When It Has All Your Health Context
         </h2>
         <p className="text-lg text-center text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-          ChatGPT doesn't know your medical history. Google doesn't track your medications. 
+          ChatGPT doesn't know your medical history. Google doesn't track your medications.
           MediCare AI has everything in one place.
         </p>
-      </section>
+      </motion.section>
 
-      {/* Main Feature - Chat */}
+      {/* Features Section */}
       <section id="features" className="max-w-6xl mx-auto px-6 py-32 scroll-mt-20">
-        <div className="text-center mb-16">
+        <motion.div
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          className="text-center mb-16"
+        >
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-8 leading-tight font-pt-serif">
             Powerful Features for Your Health
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
             Everything you need to manage your health in one intelligent platform
           </p>
-        </div>
-        
+        </motion.div>
+
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
           {[
             { 
@@ -91,38 +131,52 @@ export default function LandingPage() {
               title: 'AI Consultation', 
               desc: 'Ask questions in plain language, anytime you’re unsure.',
               Icon: MessageCircle,
+            },
+            {
+              title: "Drug Categories",
+              desc: "Browse by pain relief, antibiotics, cold & flu, and more.",
+              Icon: BookOpenText,
             }
           ].map((feature) => (
             <div
               key={feature.title}
-              // TODO: To restore routing, change 'div' to 'Link' and add: to={`/chat?topic=${encodeURIComponent(feature.title)}`}
-              className="block bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700 transition will-change-transform hover:scale-[1.01] hover:border-emerald-500/70 dark:hover:border-emerald-400/60 hover:shadow-[0_0_0_1px_rgba(16,185,129,0.20)]"
+              className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700 transition will-change-transform hover:scale-[1.01] hover:border-emerald-500/70 dark:hover:border-emerald-400/60 hover:shadow-[0_0_0_1px_rgba(16,185,129,0.20)]"
             >
               <div className="text-emerald-600 dark:text-emerald-400 mb-4">
                 <feature.Icon className="w-8 h-8" aria-hidden="true" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{feature.title}</h3>
               <p className="text-gray-600 dark:text-gray-300">{feature.desc}</p>
-            </div>
+            </motion.div>
           ))}
         </div>
 
-        <p className="text-center text-sm text-gray-500 dark:text-gray-400 -mt-6 mb-12 max-w-3xl mx-auto">
+        <motion.p
+          variants={fadeIn}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="text-center text-sm text-gray-500 dark:text-gray-400 -mt-6 mb-12 max-w-3xl mx-auto"
+        >
           This platform provides general medical information and does not replace professional medical advice.
-        </p>
+        </motion.p>
 
         <div className="text-center">
-          {/* TODO: To restore routing, change 'button' back to 'Link' and add: to="/chat" */}
-          <button type="button" className="inline-block bg-emerald-600 text-white dark:text-gray-900 px-8 py-4 rounded-full text-base font-medium transition-all duration-300 hover:scale-105 hover:shadow-[0_0_25px_rgba(16,185,129,0.4)] cursor-pointer">
+          <Link to="/chat" className="inline-block bg-emerald-600 text-white px-8 py-3 rounded-full text-base font-medium hover:bg-emerald-700 transition">
             Try All Features
-          </button>
+          </Link>
         </div>
       </section>
 
-      {/* Feature Grid */}
+      {/* Health Data Section */}
       <section className="max-w-6xl mx-auto px-6 py-20">
         <div className="grid md:grid-cols-2 gap-16 mb-32">
-          <div>
+          <motion.div
+            variants={fadeUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+          >
             <h3 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-6 leading-tight font-pt-serif">
               All Your Health Data In One Place
             </h3>
@@ -130,49 +184,62 @@ export default function LandingPage() {
               Store medical records, prescriptions, and test results. Everything automatically organized and searchable.
             </p>
             <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <svg className="w-6 h-6 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <div>
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-1">Intelligent Storage</h4>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm">All records are auto-tagged and categorized</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <svg className="w-6 h-6 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <div>
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-1">Secure & Private</h4>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm">Enterprise-grade encryption and HIPAA compliant</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <svg className="w-6 h-6 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <div>
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-1">Easy Sharing</h4>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm">Share with healthcare providers instantly</p>
-                </div>
-              </div>
+              {[
+                { title: 'Intelligent Storage', desc: 'All records are auto-tagged and categorized' },
+                { title: 'Secure & Private', desc: 'Enterprise-grade encryption and HIPAA compliant' },
+                { title: 'Easy Sharing', desc: 'Share with healthcare providers instantly' },
+              ].map((item, i) => (
+                <motion.div
+                  key={item.title}
+                  variants={fadeUp}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  custom={i}
+                  className="flex items-start gap-3"
+                >
+                  <svg className="w-6 h-6 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <div>
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-1">{item.title}</h4>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">{item.desc}</p>
+                  </div>
+                </motion.div>
+              ))}
             </div>
-          </div>
-          <div className="bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30 rounded-3xl p-16 flex items-center justify-center min-h-[400px]">
+          </motion.div>
+          <motion.div
+            variants={fadeIn}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            className="bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30 rounded-3xl p-16 flex items-center justify-center min-h-[400px]"
+          >
             <svg className="w-32 h-32 text-blue-400 dark:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-          </div>
+          </motion.div>
         </div>
 
         <div className="grid md:grid-cols-2 gap-16">
-          <div className="bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-3xl p-16 flex items-center justify-center min-h-[400px]">
+          <motion.div
+            variants={fadeIn}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            className="bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-3xl p-16 flex items-center justify-center min-h-[400px]"
+          >
             <svg className="w-32 h-32 text-purple-400 dark:text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
-          </div>
-          <div>
+          </motion.div>
+          <motion.div
+            variants={fadeUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+          >
             <h3 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-6 leading-tight font-pt-serif">
               Smart Health Monitoring
             </h3>
@@ -180,50 +247,50 @@ export default function LandingPage() {
               Track symptoms, medications, and vitals. Get AI-powered insights to stay on top of your health.
             </p>
             <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <svg className="w-6 h-6 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <div>
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-1">Medication Reminders</h4>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm">Never miss a dose with smart notifications</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <svg className="w-6 h-6 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <div>
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-1">Symptom Tracking</h4>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm">Log and analyze symptoms over time</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <svg className="w-6 h-6 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <div>
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-1">Health Insights</h4>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm">AI-powered trends and recommendations</p>
-                </div>
-              </div>
+              {[
+                { title: 'Medication Reminders', desc: 'Never miss a dose with smart notifications' },
+                { title: 'Symptom Tracking', desc: 'Log and analyze symptoms over time' },
+                { title: 'Health Insights', desc: 'AI-powered trends and recommendations' },
+              ].map((item, i) => (
+                <motion.div
+                  key={item.title}
+                  variants={fadeUp}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  custom={i}
+                  className="flex items-start gap-3"
+                >
+                  <svg className="w-6 h-6 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <div>
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-1">{item.title}</h4>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">{item.desc}</p>
+                  </div>
+                </motion.div>
+              ))}
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
-
-
       {/* Use Cases */}
       <section className="max-w-6xl mx-auto px-6 py-20">
-        <div className="text-center mb-16">
+        <motion.div
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          className="text-center mb-16"
+        >
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4 leading-tight font-pt-serif">
             Built for Students Who Need Fast & Safe Medical Guidance
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
             Helping students make informed decisions about medications without unnecessary trips to the pharmacy.
           </p>
-        </div>
+        </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
@@ -245,30 +312,41 @@ export default function LandingPage() {
             { 
               title: 'AI Assistance', 
               desc: 'Ask health-related questions and get instant AI-powered responses.',
-              Icon: MessageCircle
+              Icon: Bot
             }
           ].map((item) => (
             <div 
               key={item.title} 
-              // TODO: To restore routing, change 'div' to 'Link' and add: to={`/chat?topic=${encodeURIComponent(item.title)}`}
-              className="block bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_15px_rgba(16,185,129,0.15)] dark:hover:shadow-[0_0_15px_rgba(16,185,129,0.2)] hover:border-emerald-500/50 dark:hover:border-emerald-400/50"
+              className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_15px_rgba(16,185,129,0.15)] dark:hover:shadow-[0_0_15px_rgba(16,185,129,0.2)] hover:border-emerald-500/50 dark:hover:border-emerald-400/50"
             >
               <div className="text-emerald-600 dark:text-emerald-400 mb-4">
                 <item.Icon className="w-8 h-8" aria-hidden="true" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{item.title}</h3>
               <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{item.desc}</p>
-            </div>
+            </motion.div>
           ))}
         </div>
 
-        <div className="mt-12 text-center text-sm text-gray-500 dark:text-gray-400 max-w-3xl mx-auto">
+        <motion.div
+          variants={fadeIn}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="mt-12 text-center text-sm text-gray-500 dark:text-gray-400 max-w-3xl mx-auto"
+        >
           Disclaimer: This platform provides general medical guidance and does not replace professional healthcare advice.
-        </div>
+        </motion.div>
       </section>
 
       {/* Final CTA */}
-      <section className="max-w-6xl mx-auto px-6 py-32">
+      <motion.section
+        variants={fadeUp}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.3 }}
+        className="max-w-6xl mx-auto px-6 py-32"
+      >
         <div className="text-center">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-8 leading-tight font-lobster">
             Experience MediCare AI Today
@@ -276,27 +354,32 @@ export default function LandingPage() {
           <p className="text-lg text-gray-600 dark:text-gray-400 mb-12 max-w-2xl mx-auto">
             Your entire health journey, in one place.
           </p>
-          {/* TODO: To restore routing, change 'button' back to 'Link' and add: to="/chat" */}
-          <button type="button" className="inline-block bg-emerald-600 text-white dark:text-gray-900 px-8 py-4 rounded-full text-base font-medium transition-all duration-300 hover:scale-105 hover:shadow-[0_0_25px_rgba(16,185,129,0.4)] cursor-pointer">
+          <Link to="/chat" className="inline-block bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-10 py-5 rounded-full text-lg font-medium hover:opacity-90 transition">
             Try AI Chat
           </button>
           <p className="text-sm text-gray-500 dark:text-gray-500 mt-6">
             We are HIPAA compliant and available 24/7
           </p>
         </div>
-      </section>
+      </motion.section>
 
-            {/* Pricing */}
+      {/* Pricing */}
       <section id="pricing" className="max-w-6xl mx-auto px-6 py-32 scroll-mt-20">
-        <div className="text-center mb-16">
+        <motion.div
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          className="text-center mb-16"
+        >
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-8 leading-tight font-pt-serif">
             Simple, Transparent Pricing
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
             Choose the plan that fits your health needs
           </p>
-        </div>
-        
+        </motion.div>
+
         <div className="grid md:grid-cols-3 gap-8 mb-20">
           {[
             { 
@@ -320,7 +403,11 @@ export default function LandingPage() {
           ].map((plan) => (
             <div 
               key={plan.name} 
-              className="group bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-8 border-2 border-gray-200 dark:border-gray-700 transition-all duration-300 hover:shadow-[0_0_15px_rgba(16,185,129,0.15)] dark:hover:shadow-[0_0_15px_rgba(16,185,129,0.2)] hover:border-emerald-500/50 dark:hover:border-emerald-400/50 hover:scale-[1.03]"
+              className={`bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-8 border-2 transition ${
+                plan.popular 
+                  ? 'border-emerald-500 dark:border-emerald-500 shadow-xl scale-105' 
+                  : 'border-gray-200 dark:border-gray-700'
+              }`}
             >
               {plan.popular && (
                 <div className="text-center mb-4">
@@ -344,20 +431,31 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-              <button 
-                className="block w-full text-center px-6 py-3 rounded-lg font-medium transition-colors duration-300 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white group-hover:bg-emerald-600 group-hover:text-white hover:!bg-emerald-700"
+              <Link 
+                to="/chat" 
+                className={`block w-full text-center px-6 py-3 rounded-lg font-medium transition ${
+                  plan.popular
+                    ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
               >
                 Get Started
-              </button>
+              </Link>
             </div>
           ))}
         </div>
 
-        <div className="text-center">
+        <motion.div
+          variants={fadeIn}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="text-center"
+        >
           <p className="text-gray-600 dark:text-gray-400 mb-4">
             All plans include HIPAA compliance and 256-bit encryption
           </p>
-        </div>
+        </motion.div>
       </section>
 
       {/* Footer */}

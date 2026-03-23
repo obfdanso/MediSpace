@@ -10,12 +10,14 @@ import FaqPage from "./pages/FaqPage";
 import PricingPage from "./pages/PricingPage";
 import SafetyPage from "./pages/SafetyPage";
 import ServicesPage from "./pages/ServicesPage";
+import AuthPage from "./pages/AuthPage";
 
 export default function App() {
   return (
     <ThemeProvider>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/auth" element={<AuthPage />} />
         <Route path="/chat" element={<Chat />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<ContactPage />} />
@@ -28,4 +30,3 @@ export default function App() {
     </ThemeProvider>
   );
 }
-
