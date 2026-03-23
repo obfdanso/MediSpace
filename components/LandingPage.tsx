@@ -55,14 +55,26 @@ export default function LandingPage() {
             Add your medical records and health data. Get AI-powered insights.
             Have your personal health assistant work for you.
           </motion.p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
-            <Link to="/chat" className="bg-emerald-600 text-white dark:text-gray-900 px-8 py-4 rounded-full text-base font-medium hover:opacity-90 transition">
+          <motion.div
+            variants={fadeUp}
+            initial="hidden"
+            animate="visible"
+            custom={2}
+            className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6"
+          >
+            <Link to="/auth" className="bg-emerald-600 text-white dark:text-gray-900 px-8 py-4 rounded-full text-base font-medium hover:opacity-90 transition">
               Get Started
             </Link>
-          </div>
-          <p className="text-sm text-gray-500 dark:text-gray-500">
+          </motion.div>
+          <motion.p
+            variants={fadeUp}
+            initial="hidden"
+            animate="visible"
+            custom={3}
+            className="text-sm text-gray-500 dark:text-gray-500"
+          >
             We are HIPAA compliant and available 24/7
-          </p>
+          </motion.p>
         </div>
       </section>
 
@@ -102,44 +114,21 @@ export default function LandingPage() {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
           {[
-            { 
-              title: 'Allergy Checker', 
-              desc: 'Flag common allergy risks for medications and ingredients.',
-              Icon: ShieldCheck,
-            },
-            { 
-              title: 'Drug Interactions', 
-              desc: 'Spot risky combinations with prescriptions and OTC meds.',
-              Icon: FlaskConical,
-            },
-            { 
-              title: 'Drug Information Lookup',
-              desc: 'Uses, dosage, side effects, warnings — in one place.',
-              Icon: FileSearch,
-            },
-            { 
-              title: 'Symptom Analysis', 
-              desc: 'Understand symptoms and when to seek medical help.',
-              Icon: ClipboardList,
-            },
-            { 
-              title: 'Emergency Guidance',
-              desc: 'Quick steps for overdose or severe reactions.',
-              Icon: AlertTriangle,
-            },
-            { 
-              title: 'AI Consultation', 
-              desc: 'Ask questions in plain language, anytime you’re unsure.',
-              Icon: MessageCircle,
-            },
-            {
-              title: "Drug Categories",
-              desc: "Browse by pain relief, antibiotics, cold & flu, and more.",
-              Icon: BookOpenText,
-            }
-          ].map((feature) => (
-            <div
+            { title: 'Allergy Checker', desc: 'Flag common allergy risks for medications and ingredients.', Icon: ShieldCheck },
+            { title: 'Drug Interactions', desc: 'Spot risky combinations with prescriptions and OTC meds.', Icon: FlaskConical },
+            { title: 'Drug Information Lookup', desc: 'Uses, dosage, side effects, warnings — in one place.', Icon: FileSearch },
+            { title: 'Symptom Analysis', desc: 'Understand symptoms and when to seek medical help.', Icon: ClipboardList },
+            { title: 'Emergency Guidance', desc: 'Quick steps for overdose or severe reactions.', Icon: AlertTriangle },
+            { title: 'AI Consultation', desc: "Ask questions in plain language, anytime you're unsure.", Icon: MessageCircle },
+            { title: "Drug Categories", desc: "Browse by pain relief, antibiotics, cold & flu, and more.", Icon: BookOpenText }
+          ].map((feature, i) => (
+            <motion.div
               key={feature.title}
+              variants={fadeUp}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+              custom={i * 0.1}
               className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700 transition will-change-transform hover:scale-[1.01] hover:border-emerald-500/70 dark:hover:border-emerald-400/60 hover:shadow-[0_0_0_1px_rgba(16,185,129,0.20)]"
             >
               <div className="text-emerald-600 dark:text-emerald-400 mb-4">
@@ -147,7 +136,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{feature.title}</h3>
               <p className="text-gray-600 dark:text-gray-300">{feature.desc}</p>
-            </div>
+            </motion.div>
           ))}
         </div>
 
@@ -161,11 +150,17 @@ export default function LandingPage() {
           This platform provides general medical information and does not replace professional medical advice.
         </motion.p>
 
-        <div className="text-center">
-          <Link to="/chat" className="inline-block bg-emerald-600 text-white px-8 py-3 rounded-full text-base font-medium hover:bg-emerald-700 transition">
+        <motion.div
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="text-center"
+        >
+          <Link to="/auth" className="inline-block bg-emerald-600 text-white px-8 py-3 rounded-full text-base font-medium hover:bg-emerald-700 transition">
             Try All Features
           </Link>
-        </div>
+        </motion.div>
       </section>
 
       {/* Health Data Section */}
@@ -294,29 +289,18 @@ export default function LandingPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
-            { 
-              title: 'Students', 
-              desc: 'Quickly access drug information for common illnesses on campus.',
-              Icon: GraduationCap
-            },
-            { 
-              title: 'Self-Medication Support', 
-              desc: 'Get guidance on what medications to take for minor health issues.',
-              Icon: Pill
-            },
-            { 
-              title: 'Safe Drug Usage', 
-              desc: 'Avoid harmful drug combinations and incorrect dosage.',
-              Icon: ShieldAlert
-            },
-            { 
-              title: 'AI Assistance', 
-              desc: 'Ask health-related questions and get instant AI-powered responses.',
-              Icon: Bot
-            }
-          ].map((item) => (
-            <div 
-              key={item.title} 
+            { title: 'Students', desc: 'Quickly access drug information for common illnesses on campus.', Icon: GraduationCap },
+            { title: 'Self-Medication Support', desc: 'Get guidance on what medications to take for minor health issues.', Icon: Pill },
+            { title: 'Safe Drug Usage', desc: 'Avoid harmful drug combinations and incorrect dosage.', Icon: ShieldAlert },
+            { title: 'AI Assistance', desc: 'Ask health-related questions and get instant AI-powered responses.', Icon: Bot }
+          ].map((item, i) => (
+            <motion.div
+              key={item.title}
+              variants={fadeUp}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+              custom={i}
               className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_15px_rgba(16,185,129,0.15)] dark:hover:shadow-[0_0_15px_rgba(16,185,129,0.2)] hover:border-emerald-500/50 dark:hover:border-emerald-400/50"
             >
               <div className="text-emerald-600 dark:text-emerald-400 mb-4">
@@ -324,7 +308,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{item.title}</h3>
               <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{item.desc}</p>
-            </div>
+            </motion.div>
           ))}
         </div>
 
@@ -354,7 +338,7 @@ export default function LandingPage() {
           <p className="text-lg text-gray-600 dark:text-gray-400 mb-12 max-w-2xl mx-auto">
             Your entire health journey, in one place.
           </p>
-          <Link to="/chat" className="inline-block bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-10 py-5 rounded-full text-lg font-medium hover:opacity-90 transition">
+          <Link to="/auth" className="inline-block bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-10 py-5 rounded-full text-lg font-medium hover:opacity-90 transition">
             Try AI Chat
           </Link>
           <p className="text-sm text-gray-500 dark:text-gray-500 mt-6">
@@ -382,30 +366,20 @@ export default function LandingPage() {
 
         <div className="grid md:grid-cols-3 gap-8 mb-20">
           {[
-            { 
-              name: 'Free', 
-              price: '$0', 
-              features: ['Basic AI consultation', '5 queries per day', 'Email support', 'Health tracking'],
-              popular: false
-            },
-            { 
-              name: 'Pro', 
-              price: '$19', 
-              features: ['Unlimited AI consultation', 'Priority support', 'Advanced health tracking', 'Personalized plans', 'Drug interaction checker'],
-              popular: true
-            },
-            { 
-              name: 'Enterprise', 
-              price: '$49', 
-              features: ['Everything in Pro', 'Dedicated support', 'API access', 'Custom integrations', 'Family accounts (up to 5)'],
-              popular: false
-            }
-          ].map((plan) => (
-            <div 
-              key={plan.name} 
+            { name: 'Free', price: '$0', features: ['Basic AI consultation', '5 queries per day', 'Email support', 'Health tracking'], popular: false },
+            { name: 'Pro', price: '$19', features: ['Unlimited AI consultation', 'Priority support', 'Advanced health tracking', 'Personalized plans', 'Drug interaction checker'], popular: true },
+            { name: 'Enterprise', price: '$49', features: ['Everything in Pro', 'Dedicated support', 'API access', 'Custom integrations', 'Family accounts (up to 5)'], popular: false }
+          ].map((plan, i) => (
+            <motion.div
+              key={plan.name}
+              variants={fadeUp}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+              custom={i}
               className={`bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-8 border-2 transition ${
-                plan.popular 
-                  ? 'border-emerald-500 dark:border-emerald-500 shadow-xl scale-105' 
+                plan.popular
+                  ? 'border-emerald-500 dark:border-emerald-500 shadow-xl scale-105'
                   : 'border-gray-200 dark:border-gray-700'
               }`}
             >
@@ -431,8 +405,8 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-              <Link 
-                to="/chat" 
+              <Link
+                to="/auth"
                 className={`block w-full text-center px-6 py-3 rounded-lg font-medium transition ${
                   plan.popular
                     ? 'bg-emerald-600 text-white hover:bg-emerald-700'
@@ -441,7 +415,7 @@ export default function LandingPage() {
               >
                 Get Started
               </Link>
-            </div>
+            </motion.div>
           ))}
         </div>
 
