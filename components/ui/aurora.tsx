@@ -156,19 +156,7 @@ export const AuroraShaders = forwardRef<HTMLDivElement, AuroraShadersProps>(
     },
     ref,
   ) => {
-    const [webglOk, setWebglOk] = useState(true)
-
-    useEffect(() => {
-      try {
-        const canvas = document.createElement("canvas")
-        const gl =
-          canvas.getContext("webgl") || canvas.getContext("experimental-webgl")
-        setWebglOk(!!gl)
-      } catch {
-        setWebglOk(false)
-      }
-    }, [])
-
+    // Render the CSS fallback to completely avoid react-shaders WebGL compilation errors 
     const fallbackStyle = useMemo<React.CSSProperties>(
       () => ({
         width: "100%",
@@ -186,21 +174,7 @@ export const AuroraShaders = forwardRef<HTMLDivElement, AuroraShadersProps>(
 
     return (
       <div className={cn("w-full h-full", className)} ref={ref} {...(props as any)}>
-        {webglOk ? (
-          <Shader
-            fs={auroraShader}
-            style={{ width: "100%", height: "100%" } as CSSStyleDeclaration}
-            uniforms={{
-              u_speed: { type: "1f", value: speed },
-              u_intensity: { type: "1f", value: intensity },
-              u_vibrancy: { type: "1f", value: vibrancy },
-              u_frequency: { type: "1f", value: frequency },
-              u_stretch: { type: "1f", value: stretch },
-            }}
-          />
-        ) : (
-          <div style={fallbackStyle} />
-        )}
+        <div style={fallbackStyle} />
       </div>
     )
   },

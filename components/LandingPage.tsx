@@ -28,9 +28,9 @@ export default function LandingPage() {
             Have your personal health assistant work for you.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
-            <Link to="/chat" className="bg-emerald-600 text-white dark:text-gray-900 px-8 py-4 rounded-full text-base font-medium hover:opacity-90 transition">
+            <button type="button" className="bg-emerald-600 text-white dark:text-gray-900 px-8 py-4 rounded-full text-base font-medium transition-all duration-300 hover:scale-105 hover:shadow-[0_0_25px_rgba(16,185,129,0.4)] cursor-default">
               Get Started
-            </Link>
+            </button>
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-500">
             We are HIPAA compliant and available 24/7
@@ -91,16 +91,12 @@ export default function LandingPage() {
               title: 'AI Consultation', 
               desc: 'Ask questions in plain language, anytime you’re unsure.',
               Icon: MessageCircle,
-            },
-            {
-              title: "Drug Categories",
-              desc: "Browse by pain relief, antibiotics, cold & flu, and more.",
-              Icon: BookOpenText,
             }
           ].map((feature) => (
             <div
               key={feature.title}
-              className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700 transition will-change-transform hover:scale-[1.01] hover:border-emerald-500/70 dark:hover:border-emerald-400/60 hover:shadow-[0_0_0_1px_rgba(16,185,129,0.20)]"
+              // TODO: To restore routing, change 'div' to 'Link' and add: to={`/chat?topic=${encodeURIComponent(feature.title)}`}
+              className="block bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700 transition will-change-transform hover:scale-[1.01] hover:border-emerald-500/70 dark:hover:border-emerald-400/60 hover:shadow-[0_0_0_1px_rgba(16,185,129,0.20)]"
             >
               <div className="text-emerald-600 dark:text-emerald-400 mb-4">
                 <feature.Icon className="w-8 h-8" aria-hidden="true" />
@@ -116,9 +112,10 @@ export default function LandingPage() {
         </p>
 
         <div className="text-center">
-          <Link to="/chat" className="inline-block bg-emerald-600 text-white dark:text-gray-900 px-8 py-4 rounded-full text-base font-medium hover:opacity-90 transition">
+          {/* TODO: To restore routing, change 'button' back to 'Link' and add: to="/chat" */}
+          <button type="button" className="inline-block bg-emerald-600 text-white dark:text-gray-900 px-8 py-4 rounded-full text-base font-medium transition-all duration-300 hover:scale-105 hover:shadow-[0_0_25px_rgba(16,185,129,0.4)] cursor-pointer">
             Try All Features
-          </Link>
+          </button>
         </div>
       </section>
 
@@ -248,12 +245,13 @@ export default function LandingPage() {
             { 
               title: 'AI Assistance', 
               desc: 'Ask health-related questions and get instant AI-powered responses.',
-              Icon: Bot
+              Icon: MessageCircle
             }
           ].map((item) => (
             <div 
               key={item.title} 
-              className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_15px_rgba(16,185,129,0.15)] dark:hover:shadow-[0_0_15px_rgba(16,185,129,0.2)] hover:border-emerald-500/50 dark:hover:border-emerald-400/50"
+              // TODO: To restore routing, change 'div' to 'Link' and add: to={`/chat?topic=${encodeURIComponent(item.title)}`}
+              className="block bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_15px_rgba(16,185,129,0.15)] dark:hover:shadow-[0_0_15px_rgba(16,185,129,0.2)] hover:border-emerald-500/50 dark:hover:border-emerald-400/50"
             >
               <div className="text-emerald-600 dark:text-emerald-400 mb-4">
                 <item.Icon className="w-8 h-8" aria-hidden="true" />
@@ -278,9 +276,10 @@ export default function LandingPage() {
           <p className="text-lg text-gray-600 dark:text-gray-400 mb-12 max-w-2xl mx-auto">
             Your entire health journey, in one place.
           </p>
-          <Link to="/chat" className="inline-block bg-emerald-600 text-white dark:text-gray-900 px-8 py-4 rounded-full text-base font-medium hover:opacity-90 transition">
+          {/* TODO: To restore routing, change 'button' back to 'Link' and add: to="/chat" */}
+          <button type="button" className="inline-block bg-emerald-600 text-white dark:text-gray-900 px-8 py-4 rounded-full text-base font-medium transition-all duration-300 hover:scale-105 hover:shadow-[0_0_25px_rgba(16,185,129,0.4)] cursor-pointer">
             Try AI Chat
-          </Link>
+          </button>
           <p className="text-sm text-gray-500 dark:text-gray-500 mt-6">
             We are HIPAA compliant and available 24/7
           </p>
