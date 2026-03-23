@@ -54,7 +54,7 @@ export default function LandingPage() {
           >
             Add your medical records and health data. Get AI-powered insights.
             Have your personal health assistant work for you.
-          </p>
+          </motion.p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
             <Link to="/chat" className="bg-emerald-600 text-white dark:text-gray-900 px-8 py-4 rounded-full text-base font-medium hover:opacity-90 transition">
               Get Started
@@ -62,7 +62,7 @@ export default function LandingPage() {
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-500">
             We are HIPAA compliant and available 24/7
-          </motion.p>
+          </p>
         </div>
       </section>
 
@@ -147,7 +147,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{feature.title}</h3>
               <p className="text-gray-600 dark:text-gray-300">{feature.desc}</p>
-            </motion.div>
+            </div>
           ))}
         </div>
 
@@ -324,7 +324,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{item.title}</h3>
               <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{item.desc}</p>
-            </motion.div>
+            </div>
           ))}
         </div>
 
@@ -356,7 +356,7 @@ export default function LandingPage() {
           </p>
           <Link to="/chat" className="inline-block bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-10 py-5 rounded-full text-lg font-medium hover:opacity-90 transition">
             Try AI Chat
-          </button>
+          </Link>
           <p className="text-sm text-gray-500 dark:text-gray-500 mt-6">
             We are HIPAA compliant and available 24/7
           </p>
