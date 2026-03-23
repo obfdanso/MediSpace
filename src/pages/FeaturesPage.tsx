@@ -22,7 +22,6 @@ export default function FeaturesPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               "Allergy Checker",
-              "Drug Interactions",
               "Dietary Guidance",
               "Symptom Analysis",
               "Health Tracking",
