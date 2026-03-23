@@ -105,7 +105,7 @@ const Navbar = () => {
 
             {/* Start Chat Button */}
             <Link 
-              to="/chat" 
+              to="/auth" 
               className={`bg-emerald-600 text-white font-semibold rounded-full hover:bg-emerald-700 transition shadow-lg hover:shadow-xl ${
                 isScrolled ? 'px-4 py-2 text-sm' : 'px-5 py-2 text-sm'
               }`}
