@@ -337,7 +337,7 @@ export default function LandingPage() {
           <p className="text-lg text-gray-600 dark:text-gray-400 mb-12 max-w-2xl mx-auto">
             Your entire health journey, in one place.
           </p>
-          <Link to="/auth" className="inline-block bg-emerald-600 text-white dark:text-gray-900 px-8 py-4 rounded-full text-base font-medium transition-all duration-300 hover:shadow-[0_0_20px_rgba(16,185,129,0.5)] hover:-translate-y-1">
+          <Link to="/chat" className="inline-block bg-emerald-600 text-white dark:text-gray-900 px-8 py-4 rounded-full text-base font-medium transition-all duration-300 hover:shadow-[0_0_20px_rgba(16,185,129,0.5)] hover:-translate-y-1">
             Try AI Chat
           </Link>
           <p className="text-sm text-gray-500 dark:text-gray-500 mt-6">
