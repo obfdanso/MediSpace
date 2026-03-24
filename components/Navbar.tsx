@@ -106,7 +106,7 @@ const Navbar = () => {
             {/* Start Chat Button */}
             <Link 
               to="/auth" 
-              className={`bg-emerald-600 text-white font-semibold rounded-full hover:bg-emerald-700 transition shadow-lg hover:shadow-xl ${
+              className={`bg-emerald-600 text-white dark:text-gray-900 font-semibold rounded-full transition-all duration-300 hover:shadow-[0_0_20px_rgba(16,185,129,0.5)] hover:-translate-y-1 ${
                 isScrolled ? 'px-4 py-2 text-sm' : 'px-5 py-2 text-sm'
               }`}
             >

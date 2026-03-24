@@ -119,8 +119,7 @@ export default function LandingPage() {
             { title: 'Drug Information Lookup', desc: 'Uses, dosage, side effects, warnings — in one place.', Icon: FileSearch },
             { title: 'Symptom Analysis', desc: 'Understand symptoms and when to seek medical help.', Icon: ClipboardList },
             { title: 'Emergency Guidance', desc: 'Quick steps for overdose or severe reactions.', Icon: AlertTriangle },
-            { title: 'AI Consultation', desc: "Ask questions in plain language, anytime you're unsure.", Icon: MessageCircle },
-            { title: "Drug Categories", desc: "Browse by pain relief, antibiotics, cold & flu, and more.", Icon: BookOpenText }
+            { title: 'AI Consultation', desc: "Ask questions in plain language, anytime you're unsure.", Icon: Bot }
           ].map((feature, i) => (
             <motion.div
               key={feature.title}
