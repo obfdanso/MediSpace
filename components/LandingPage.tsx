@@ -62,7 +62,7 @@ export default function LandingPage() {
             custom={2}
             className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6"
           >
-            <Link to="/auth" className="bg-emerald-600 text-white dark:text-gray-900 px-8 py-4 rounded-full text-base font-medium hover:opacity-90 transition">
+            <Link to="/auth" className="inline-block bg-emerald-600 text-white dark:text-gray-900 px-8 py-4 rounded-full text-base font-medium transition-all duration-300 hover:shadow-[0_0_20px_rgba(16,185,129,0.5)] hover:-translate-y-1">
               Get Started
             </Link>
           </motion.div>
@@ -157,7 +157,7 @@ export default function LandingPage() {
           viewport={{ once: true }}
           className="text-center"
         >
-          <Link to="/auth" className="inline-block bg-emerald-600 text-white px-8 py-3 rounded-full text-base font-medium hover:bg-emerald-700 transition">
+          <Link to="/auth" className="inline-block bg-emerald-600 text-white dark:text-gray-900 px-8 py-4 rounded-full text-base font-medium transition-all duration-300 hover:shadow-[0_0_20px_rgba(16,185,129,0.5)] hover:-translate-y-1">
             Try All Features
           </Link>
         </motion.div>
@@ -338,7 +338,7 @@ export default function LandingPage() {
           <p className="text-lg text-gray-600 dark:text-gray-400 mb-12 max-w-2xl mx-auto">
             Your entire health journey, in one place.
           </p>
-          <Link to="/auth" className="inline-block bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-10 py-5 rounded-full text-lg font-medium hover:opacity-90 transition">
+          <Link to="/auth" className="inline-block bg-emerald-600 text-white dark:text-gray-900 px-8 py-4 rounded-full text-base font-medium transition-all duration-300 hover:shadow-[0_0_20px_rgba(16,185,129,0.5)] hover:-translate-y-1">
             Try AI Chat
           </Link>
           <p className="text-sm text-gray-500 dark:text-gray-500 mt-6">
@@ -377,11 +377,7 @@ export default function LandingPage() {
               whileInView="visible"
               viewport={{ once: true, amount: 0.2 }}
               custom={i}
-              className={`bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-8 border-2 transition ${
-                plan.popular
-                  ? 'border-emerald-500 dark:border-emerald-500 shadow-xl scale-105'
-                  : 'border-gray-200 dark:border-gray-700'
-              }`}
+              className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-8 border-2 border-gray-200 dark:border-gray-700 transition-all duration-300 hover:-translate-y-2 hover:border-emerald-500/50 dark:hover:border-emerald-400/50 hover:shadow-[0_10px_40px_rgba(16,185,129,0.15)] dark:hover:shadow-[0_10px_40px_rgba(16,185,129,0.2)]"
             >
               {plan.popular && (
                 <div className="text-center mb-4">
@@ -407,11 +403,7 @@ export default function LandingPage() {
               </ul>
               <Link
                 to="/auth"
-                className={`block w-full text-center px-6 py-3 rounded-lg font-medium transition ${
-                  plan.popular
-                    ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600'
-                }`}
+                className="block w-full text-center px-6 py-3 rounded-lg font-medium transition-all duration-300 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-emerald-600 hover:text-white dark:hover:bg-emerald-500 dark:hover:text-white hover:shadow-[0_0_20px_rgba(16,185,129,0.5)] hover:-translate-y-1"
               >
                 Get Started
               </Link>

@@ -50,7 +50,7 @@ export default function PricingPage() {
             ].map((plan) => (
               <div
                 key={plan.name}
-                className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm rounded-xl p-8 border border-gray-200 dark:border-gray-800"
+                className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm rounded-xl p-8 border border-gray-200 dark:border-gray-800 transition-all duration-300 hover:-translate-y-2 hover:border-emerald-500/50 dark:hover:border-emerald-400/50 hover:shadow-[0_10px_40px_rgba(16,185,129,0.15)] dark:hover:shadow-[0_10px_40px_rgba(16,185,129,0.2)]"
               >
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                   {plan.name}
@@ -81,7 +81,7 @@ export default function PricingPage() {
                 </ul>
                 <Link
                   to="/chat"
-                  className="block w-full text-center px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition"
+                  className="block w-full text-center px-6 py-3 rounded-lg font-medium transition-all duration-300 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-emerald-600 hover:text-white dark:hover:bg-emerald-500 dark:hover:text-white hover:shadow-[0_0_20px_rgba(16,185,129,0.5)] hover:-translate-y-1"
                 >
                   Get Started
                 </Link>
