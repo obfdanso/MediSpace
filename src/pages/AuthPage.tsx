@@ -1,7 +1,6 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useTheme } from '@/components/ThemeProvider'
-import { useAuth } from '@/components/AuthContext'
 import { ShieldCheck, Bot, FlaskConical, ClipboardList, Lock, Sun, Moon, ArrowRight } from 'lucide-react'
 
 type Tab = 'login' | 'signup'
@@ -9,8 +8,6 @@ type Tab = 'login' | 'signup'
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<Tab>('login')
   const { theme, toggleTheme } = useTheme()
-  const { login } = useAuth()
-  const navigate = useNavigate()
 
   const [loginEmail, setLoginEmail] = useState('')
   const [loginPassword, setLoginPassword] = useState('')
@@ -41,8 +38,7 @@ export default function AuthPage() {
       // const data = await res.json()
       // if (!res.ok) throw new Error(data.message)
       // login(data.token)
-      login('mock-token')
-      navigate('/')
+      // navigate('/')
     } catch (err: any) {
       setLoginError(err.message || 'Login failed. Please try again.')
     } finally {
@@ -68,8 +64,8 @@ export default function AuthPage() {
     setSignupLoading(true)
     try {
       // TODO: Replace with real backend API call
-      login('mock-token')
-      navigate('/')
+      // login(data.token)
+      // navigate('/')
     } catch (err: any) {
       setSignupError(err.message || 'Signup failed. Please try again.')
     } finally {
