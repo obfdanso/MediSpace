@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, User, MessageCircle, Paperclip } from "lucide-react";
+import { Send, User, Bot, Paperclip } from "lucide-react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 
 interface Message {
@@ -105,7 +105,7 @@ export default function ChatUI({ onNewMessage, messageCount = 0 }: ChatUIProps) 
       <div className="relative z-10 bg-white/50 dark:bg-gray-900/50 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 px-6 py-4 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-emerald-600/20 flex items-center justify-center text-emerald-600 dark:text-emerald-500">
-            <MessageCircle size={24} />
+            <Bot size={24} />
           </div>
           <div>
             <h2 className="text-gray-900 dark:text-white font-semibold text-lg font-pt-serif">MediSpace AI Assistant</h2>
@@ -184,7 +184,7 @@ export default function ChatUI({ onNewMessage, messageCount = 0 }: ChatUIProps) 
                     : "bg-gray-100 dark:bg-gray-800 text-emerald-600 dark:text-emerald-400"
                 }`}
               >
-                {msg.role === "user" ? <User size={20} /> : <MessageCircle size={20} />}
+                {msg.role === "user" ? <User size={20} /> : <Bot size={20} />}
               </div>
 
               <div
