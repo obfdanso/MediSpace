@@ -362,7 +362,7 @@ export default function AuthPage() {
                         type="text"
                         value={signupName}
                         onChange={e => setSignupName(e.target.value)}
-                        placeholder="John Doe"
+                        placeholder="Your full name"
                         className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
                       />
                     </div>
