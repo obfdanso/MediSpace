@@ -31,7 +31,6 @@ const Navbar = () => {
       scrollToSection(sectionId)
     } else {
       navigate("/")
-      // Wait for the home page to mount, then scroll.
       setTimeout(() => scrollToSection(sectionId), 50)
     }
   }
@@ -54,6 +53,7 @@ const Navbar = () => {
           : 'rounded-2xl px-6 py-3'
       }`}>
         <div className="flex justify-between items-center">
+
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
             <div className="w-7 h-7 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
@@ -67,13 +67,13 @@ const Navbar = () => {
               </span>
             )}
           </Link>
-          
-          {/* Navigation Links - Hidden when scrolled */}
+
+          {/* Navigation Links */}
           {!isScrolled && (
             <ul className="hidden lg:flex items-center space-x-1">
               {navLinks.map((link) => (
                 <li key={link.sectionId}>
-                  <button 
+                  <button
                     onClick={() => handleNavClick(link.href, link.sectionId)}
                     className="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
                   >
@@ -86,6 +86,7 @@ const Navbar = () => {
 
           {/* Right Side Actions */}
           <div className="flex items-center gap-2">
+
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
@@ -103,9 +104,9 @@ const Navbar = () => {
               )}
             </button>
 
-            {/* Start Chat Button */}
-            <Link 
-              to="/auth" 
+            {/* Start Chat Button — goes to /chat to try first */}
+            <Link
+              to="/chat"
               className={`bg-emerald-600 text-white font-semibold rounded-full hover:bg-emerald-700 transition shadow-lg hover:shadow-xl ${
                 isScrolled ? 'px-4 py-2 text-sm' : 'px-5 py-2 text-sm'
               }`}
