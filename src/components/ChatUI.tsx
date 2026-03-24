@@ -74,10 +74,21 @@ export default function ChatUI({ onNewMessage, messageCount = 0 }: ChatUIProps) 
 
     // Simulate AI response
     setTimeout(() => {
+      const topicReplies: Record<string, string> = {
+        "Allergy Checker": "I can help you check for allergy risks. Tell me the medication or ingredient you want to check, and I'll flag any common allergy concerns.",
+        "Drug Interactions": "I can help you spot risky drug combinations. List the medications you're taking (prescription or OTC) and I'll check for dangerous interactions.",
+        "Drug Information Lookup": "I can look up detailed drug info for you — uses, dosage, side effects, and warnings. Which medication would you like to know about?",
+        "Symptom Analysis": "I can help you understand your symptoms. Describe what you're experiencing and I'll give you some guidance on what it might mean and when to seek help.",
+        "Emergency Guidance": "If this is a medical emergency, please call emergency services immediately. Otherwise, tell me the situation (e.g. suspected overdose or severe reaction) and I'll walk you through the steps.",
+        "AI Consultation": "I'm here for any health-related questions you have. Ask me anything — medications, symptoms, general health advice, and more.",
+      };
+      const reply = topic && topicReplies[topic]
+        ? topicReplies[topic]
+        : "I'm here to help with your health questions! What would you like to know?";
       const aiMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: "ai",
-        content: "I'm here to help! Please sign in to continue our conversation and unlock all features.",
+        content: reply,
       };
       setMessages((prev) => [...prev, aiMsg]);
     }, 800);

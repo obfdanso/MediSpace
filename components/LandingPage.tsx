@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "./AuthContext";
 import { motion } from "framer-motion";
 import type { Variants } from "framer-motion";
 import {
@@ -31,6 +32,7 @@ const fadeIn: Variants = {
 }
 
 export default function LandingPage() {
+  const { isLoggedIn } = useAuth()
   return (
     <div className="min-h-screen">
 
@@ -62,9 +64,11 @@ export default function LandingPage() {
             custom={2}
             className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6"
           >
-            <Link to="/auth" className="inline-block bg-emerald-600 text-white dark:text-gray-900 px-8 py-4 rounded-full text-base font-medium transition-all duration-300 hover:shadow-[0_0_20px_rgba(16,185,129,0.5)] hover:-translate-y-1">
-              Get Started
-            </Link>
+            {!isLoggedIn && (
+              <Link to="/auth" className="inline-block bg-emerald-600 text-white dark:text-gray-900 px-8 py-4 rounded-full text-base font-medium transition-all duration-300 hover:shadow-[0_0_20px_rgba(16,185,129,0.5)] hover:-translate-y-1">
+                Get Started
+              </Link>
+            )}
           </motion.div>
           <motion.p
             variants={fadeUp}
@@ -128,13 +132,18 @@ export default function LandingPage() {
               whileInView="visible"
               viewport={{ once: true, amount: 0.2 }}
               custom={i * 0.1}
-              className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700 transition will-change-transform hover:scale-[1.01] hover:border-emerald-500/70 dark:hover:border-emerald-400/60 hover:shadow-[0_0_0_1px_rgba(16,185,129,0.20)]"
             >
-              <div className="text-emerald-600 dark:text-emerald-400 mb-4">
-                <feature.Icon className="w-8 h-8" aria-hidden="true" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{feature.title}</h3>
-              <p className="text-gray-600 dark:text-gray-300">{feature.desc}</p>
+              <Link
+                to={`/chat?topic=${encodeURIComponent(feature.title)}`}
+                className="block bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700 transition will-change-transform hover:scale-[1.01] hover:border-emerald-500/70 dark:hover:border-emerald-400/60 hover:shadow-[0_0_0_1px_rgba(16,185,129,0.20)] cursor-pointer"
+              >
+                <div className="text-emerald-600 dark:text-emerald-400 mb-4">
+                  <feature.Icon className="w-8 h-8" aria-hidden="true" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{feature.title}</h3>
+                <p className="text-gray-600 dark:text-gray-300">{feature.desc}</p>
+                <p className="text-emerald-600 dark:text-emerald-400 text-sm font-medium mt-4">Try it →</p>
+              </Link>
             </motion.div>
           ))}
         </div>
@@ -156,9 +165,11 @@ export default function LandingPage() {
           viewport={{ once: true }}
           className="text-center"
         >
-          <Link to="/auth" className="inline-block bg-emerald-600 text-white dark:text-gray-900 px-8 py-4 rounded-full text-base font-medium transition-all duration-300 hover:shadow-[0_0_20px_rgba(16,185,129,0.5)] hover:-translate-y-1">
-            Try All Features
-          </Link>
+          {!isLoggedIn && (
+            <Link to="/auth" className="inline-block bg-emerald-600 text-white dark:text-gray-900 px-8 py-4 rounded-full text-base font-medium transition-all duration-300 hover:shadow-[0_0_20px_rgba(16,185,129,0.5)] hover:-translate-y-1">
+              Try All Features
+            </Link>
+          )}
         </motion.div>
       </section>
 
@@ -345,83 +356,6 @@ export default function LandingPage() {
           </p>
         </div>
       </motion.section>
-
-      {/* Pricing */}
-      <section id="pricing" className="max-w-6xl mx-auto px-6 py-32 scroll-mt-20">
-        <motion.div
-          variants={fadeUp}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-8 leading-tight font-pt-serif">
-            Simple, Transparent Pricing
-          </h2>
-          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            Choose the plan that fits your health needs
-          </p>
-        </motion.div>
-
-        <div className="grid md:grid-cols-3 gap-8 mb-20">
-          {[
-            { name: 'Free', price: '$0', features: ['Basic AI consultation', '5 queries per day', 'Email support', 'Health tracking'], popular: false },
-            { name: 'Pro', price: '$19', features: ['Unlimited AI consultation', 'Priority support', 'Advanced health tracking', 'Personalized plans', 'Drug interaction checker'], popular: true },
-            { name: 'Enterprise', price: '$49', features: ['Everything in Pro', 'Dedicated support', 'API access', 'Custom integrations', 'Family accounts (up to 5)'], popular: false }
-          ].map((plan, i) => (
-            <motion.div
-              key={plan.name}
-              variants={fadeUp}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.2 }}
-              custom={i}
-              className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-8 border-2 border-gray-200 dark:border-gray-700 transition-all duration-300 hover:-translate-y-2 hover:border-emerald-500/50 dark:hover:border-emerald-400/50 hover:shadow-[0_10px_40px_rgba(16,185,129,0.15)] dark:hover:shadow-[0_10px_40px_rgba(16,185,129,0.2)]"
-            >
-              {plan.popular && (
-                <div className="text-center mb-4">
-                  <span className="bg-emerald-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
-                    Most Popular
-                  </span>
-                </div>
-              )}
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 text-center">{plan.name}</h3>
-              <p className="text-5xl font-bold text-gray-900 dark:text-white mb-2 text-center">
-                {plan.price}
-                <span className="text-lg text-gray-600 dark:text-gray-400">/mo</span>
-              </p>
-              <ul className="space-y-3 mb-8 mt-8">
-                {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-start text-gray-600 dark:text-gray-300">
-                    <svg className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-              <Link
-                to="/auth"
-                className="block w-full text-center px-6 py-3 rounded-lg font-medium transition-all duration-300 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-emerald-600 hover:text-white dark:hover:bg-emerald-500 dark:hover:text-white hover:shadow-[0_0_20px_rgba(16,185,129,0.5)] hover:-translate-y-1"
-              >
-                Get Started
-              </Link>
-            </motion.div>
-          ))}
-        </div>
-
-        <motion.div
-          variants={fadeIn}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="text-center"
-        >
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
-            All plans include HIPAA compliance and 256-bit encryption
-          </p>
-        </motion.div>
-      </section>
 
       {/* Footer */}
       <Footer />

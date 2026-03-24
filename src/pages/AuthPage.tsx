@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useTheme } from '@/components/ThemeProvider'
+import { useAuth } from '@/components/AuthContext'
 import { ShieldCheck, Bot, FlaskConical, ClipboardList, Lock, Sun, Moon, ArrowRight } from 'lucide-react'
 
 type Tab = 'login' | 'signup'
@@ -8,6 +9,8 @@ type Tab = 'login' | 'signup'
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<Tab>('login')
   const { theme, toggleTheme } = useTheme()
+  const { login } = useAuth()
+  const navigate = useNavigate()
 
   const [loginEmail, setLoginEmail] = useState('')
   const [loginPassword, setLoginPassword] = useState('')
@@ -33,17 +36,13 @@ export default function AuthPage() {
     }
     setLoginLoading(true)
     try {
-      // TODO: Replace with backend API call
-      // const res = await fetch('https://your-backend.com/api/auth/login', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ email: loginEmail, password: loginPassword }),
-      // })
+      // TODO: Replace with real backend API call
+      // const res = await fetch('https://your-backend.com/api/auth/login', { ... })
       // const data = await res.json()
       // if (!res.ok) throw new Error(data.message)
-      // localStorage.setItem('token', data.token)
-      // navigate('/chat')
-      console.log('Login:', { email: loginEmail, password: loginPassword })
+      // login(data.token)
+      login('mock-token')
+      navigate('/')
     } catch (err: any) {
       setLoginError(err.message || 'Login failed. Please try again.')
     } finally {
@@ -68,8 +67,9 @@ export default function AuthPage() {
     }
     setSignupLoading(true)
     try {
-      // TODO: Replace with backend API call
-      console.log('Signup:', { name: signupName, email: signupEmail })
+      // TODO: Replace with real backend API call
+      login('mock-token')
+      navigate('/')
     } catch (err: any) {
       setSignupError(err.message || 'Signup failed. Please try again.')
     } finally {
