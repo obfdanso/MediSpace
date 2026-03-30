@@ -20,7 +20,7 @@ export default function PricingPage() {
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-12 text-center">
             Pricing Plans
           </h1>
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
                 name: "Free",
