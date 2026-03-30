@@ -4,24 +4,27 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTheme } from './ThemeProvider'
 import { useAuth } from './AuthContext'
 import { useState, useEffect, useRef } from 'react'
-import { User, LogOut, KeyRound, X } from 'lucide-react'
+import { User, LogOut, KeyRound, X, ClipboardList } from 'lucide-react'
 
 const Navbar = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const { theme, toggleTheme } = useTheme()
-  const { isLoggedIn, logout } = useAuth()
+  const { isLoggedIn, logout, profile, user, updatePassword } = useAuth()
   const [isScrolled, setIsScrolled] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [showChangePassword, setShowChangePassword] = useState(false)
-  const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [passwordError, setPasswordError] = useState('')
   const [passwordSuccess, setPasswordSuccess] = useState(false)
+  const [passwordLoading, setPasswordLoading] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const isHomePage = location.pathname === '/'
+
+  const displayName = profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Account'
+  const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50)
@@ -44,7 +47,7 @@ const Navbar = () => {
     if (element) element.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
-  const handleNavClick = (href: string, sectionId: string) => {
+  const handleNavClick = (_href: string, sectionId: string) => {
     if (isHomePage) {
       scrollToSection(sectionId)
     } else {
@@ -58,36 +61,41 @@ const Navbar = () => {
     setShowLogoutConfirm(true)
   }
 
-  const confirmLogout = () => {
+  const confirmLogout = async () => {
     setShowLogoutConfirm(false)
-    logout()
+    await logout()
     navigate('/')
   }
 
-  const handleChangePassword = (e: React.FormEvent) => {
+  const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault()
     setPasswordError('')
-    if (!currentPassword || !newPassword || !confirmPassword) {
+    if (!newPassword || !confirmPassword) {
       setPasswordError('Please fill in all fields.')
       return
     }
     if (newPassword.length < 6) {
-      setPasswordError('New password must be at least 6 characters.')
+      setPasswordError('Password must be at least 6 characters.')
       return
     }
     if (newPassword !== confirmPassword) {
       setPasswordError('Passwords do not match.')
       return
     }
-    // TODO: Replace with real backend API call
+    setPasswordLoading(true)
+    const { error } = await updatePassword(newPassword)
+    setPasswordLoading(false)
+    if (error) {
+      setPasswordError(error)
+      return
+    }
     setPasswordSuccess(true)
     setTimeout(() => {
       setShowChangePassword(false)
       setPasswordSuccess(false)
-      setCurrentPassword('')
       setNewPassword('')
       setConfirmPassword('')
-    }, 1500)
+    }, 1800)
   }
 
   const navLinks = [
@@ -135,7 +143,7 @@ const Navbar = () => {
               </ul>
             )}
 
-            {/* Right Side Actions */}
+            {/* Right Side */}
             <div className="flex items-center gap-2">
 
               {/* Theme Toggle */}
@@ -155,29 +163,41 @@ const Navbar = () => {
                 )}
               </button>
 
-              {/* Start Chat — always visible */}
+              {/* Start Chat */}
               <Link
                 to="/chat"
-                className={`bg-emerald-600 text-white dark:text-gray-900 font-semibold rounded-full transition-all duration-300 hover:shadow-[0_0_20px_rgba(16,185,129,0.5)] hover:-translate-y-1 ${
+                className={`bg-emerald-600 text-white font-semibold rounded-full transition-all duration-300 hover:shadow-[0_0_20px_rgba(16,185,129,0.5)] hover:-translate-y-1 ${
                   isScrolled ? 'px-4 py-2 text-sm' : 'px-5 py-2 text-sm'
                 }`}
               >
                 {isScrolled ? 'Chat' : 'Start Chat'}
               </Link>
 
-              {/* User dropdown (logged in only) */}
+              {/* User dropdown */}
               {isLoggedIn && (
                 <div className="relative" ref={dropdownRef}>
                   <button
                     onClick={() => setDropdownOpen(o => !o)}
-                    className="w-9 h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center hover:bg-emerald-700 transition shadow-sm"
+                    className="w-9 h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center hover:bg-emerald-700 transition shadow-sm text-xs font-bold"
                     aria-label="User menu"
                   >
-                    <User className="w-4 h-4" />
+                    {initials || <User className="w-4 h-4" />}
                   </button>
 
                   {dropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden z-50">
+                    <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden z-50">
+                      {/* User info */}
+                      <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
+                        <p className="text-xs font-semibold text-gray-900 dark:text-white truncate">{displayName}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user?.email}</p>
+                      </div>
+                      <button
+                        onClick={() => { setDropdownOpen(false); navigate('/onboarding') }}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+                      >
+                        <ClipboardList className="w-4 h-4 text-gray-400" />
+                        Health Profile
+                      </button>
                       <button
                         onClick={() => { setDropdownOpen(false); setShowChangePassword(true) }}
                         className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
@@ -235,11 +255,14 @@ const Navbar = () => {
       {/* Change Password Modal */}
       {showChangePassword && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowChangePassword(false)} />
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => { setShowChangePassword(false); setPasswordError(''); setNewPassword(''); setConfirmPassword('') }} />
           <div className="relative w-full max-w-sm bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-bold text-gray-900 dark:text-white">Change Password</h2>
-              <button onClick={() => setShowChangePassword(false)} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+              <button
+                onClick={() => { setShowChangePassword(false); setPasswordError(''); setNewPassword(''); setConfirmPassword('') }}
+                className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+              >
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -251,7 +274,7 @@ const Navbar = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Password updated successfully!</p>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Password updated successfully.</p>
               </div>
             ) : (
               <form onSubmit={handleChangePassword} className="space-y-4">
@@ -260,16 +283,6 @@ const Navbar = () => {
                     {passwordError}
                   </p>
                 )}
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Current Password</label>
-                  <input
-                    type="password"
-                    value={currentPassword}
-                    onChange={e => setCurrentPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
-                  />
-                </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">New Password</label>
                   <input
@@ -292,9 +305,18 @@ const Navbar = () => {
                 </div>
                 <button
                   type="submit"
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl text-sm font-bold transition mt-1"
+                  disabled={passwordLoading}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white py-2.5 rounded-xl text-sm font-bold transition mt-1 flex items-center justify-center gap-2"
                 >
-                  Update Password
+                  {passwordLoading ? (
+                    <>
+                      <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      Updating...
+                    </>
+                  ) : 'Update Password'}
                 </button>
               </form>
             )}
