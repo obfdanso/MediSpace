@@ -84,6 +84,7 @@ function AuthCallbackPage() {
     )
   }
   if (!isLoggedIn) return <Navigate to="/auth" replace />
+  if (!profile || !profile.onboarding_completed) return <Navigate to="/onboarding" replace />
   return <Navigate to="/" replace />
 }
 
