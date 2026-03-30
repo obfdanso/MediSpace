@@ -183,7 +183,7 @@ export default function ChatUI({
     <div className="flex flex-col w-full h-full bg-transparent overflow-hidden">
 
       {/* Chat Header */}
-      <div className="relative z-10 bg-white/50 dark:bg-gray-900/50 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 pl-14 md:pl-6 pr-6 py-4 flex items-center justify-between shrink-0">
+      <div className="relative z-10 bg-white/50 dark:bg-gray-900/50 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 pl-14 md:pl-6 pr-4 md:pr-6 py-4 flex flex-wrap items-center justify-between shrink-0 gap-3">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-emerald-600/20 flex items-center justify-center text-emerald-600 dark:text-emerald-500">
             <Bot size={24} />
@@ -248,7 +248,7 @@ export default function ChatUI({
 
       {/* Warning banner */}
       {!isLoggedIn && remainingMessages === 1 && (
-        <div className="bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800 px-6 py-3 flex items-center justify-between shrink-0">
+        <div className="bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800 px-4 md:px-6 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between shrink-0 gap-3 sm:gap-0">
           <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 text-sm font-medium">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -354,7 +354,7 @@ export default function ChatUI({
 
         {/* Locked overlay */}
         {isLocked && (
-          <div className="max-w-4xl mx-auto mb-3 flex items-center justify-between bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-3">
+          <div className="max-w-4xl mx-auto mb-3 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-4 md:px-5 py-3 text-center sm:text-left">
             <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 text-sm">
               <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />

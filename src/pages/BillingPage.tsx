@@ -162,7 +162,7 @@ function PlanTab() {
         </span>
       </div>
 
-      <div className="grid grid-cols-2 gap-6" style={{ gridTemplateColumns: "1fr 1fr" }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {plans.map((plan) => {
           const isCurrent = plan.id === currentTier;
           const isPremium = plan.id === "premium";
@@ -385,14 +385,14 @@ function ProfileTab({ userId, tier, onUpgrade }: { userId: string | null; tier: 
 
       {/* Basic Info */}
       <Section title="Basic Info">
-        <div className="grid grid-cols-2 gap-5">
-          <div className="col-span-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div className="sm:col-span-2">
             <Label>Date of Birth</Label>
             <input type="date" value={data.date_of_birth} onChange={e => set("date_of_birth", e.target.value)}
               max={new Date().toISOString().split("T")[0]}
               className={inputCls} />
           </div>
-          <div className="col-span-2">
+          <div className="sm:col-span-2">
             <Label>Gender</Label>
             <div className="flex flex-wrap gap-2">
               {[{ v: "male", l: "Male" }, { v: "female", l: "Female" }, { v: "non_binary", l: "Non-binary" }, { v: "prefer_not_to_say", l: "Prefer not to say" }].map(o => (
@@ -408,7 +408,7 @@ function ProfileTab({ userId, tier, onUpgrade }: { userId: string | null; tier: 
             <Label>Weight (kg)</Label>
             <input type="number" value={data.weight_kg} onChange={e => set("weight_kg", e.target.value)} placeholder="e.g. 70" className={inputCls} />
           </div>
-          <div className="col-span-2">
+          <div className="sm:col-span-2">
             <Label>Blood Type</Label>
             <div className="flex flex-wrap gap-2">
               {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "unknown"].map(bt => (
