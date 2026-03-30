@@ -183,7 +183,7 @@ export default function ChatUI({
     <div className="flex flex-col w-full h-full bg-transparent overflow-hidden">
 
       {/* Chat Header */}
-      <div className="relative z-10 bg-white/50 dark:bg-gray-900/50 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 px-6 py-4 flex items-center justify-between shrink-0">
+      <div className="relative z-10 bg-white/50 dark:bg-gray-900/50 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 pl-14 md:pl-6 pr-6 py-4 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-emerald-600/20 flex items-center justify-center text-emerald-600 dark:text-emerald-500">
             <Bot size={24} />

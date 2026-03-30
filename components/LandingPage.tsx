@@ -37,13 +37,13 @@ export default function LandingPage() {
     <div className="min-h-screen">
 
       {/* Hero Section */}
-      <section id="home" className="max-w-6xl mx-auto px-6 pt-40 pb-24 scroll-mt-20">
+      <section id="home" className="max-w-6xl mx-auto px-6 pt-28 md:pt-40 pb-16 md:pb-24 scroll-mt-20">
         <div className="text-center">
           <motion.h1
             variants={fadeUp}
             initial="hidden"
             animate="visible"
-            className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white mb-8 leading-tight tracking-tight font-pt-serif"
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white mb-6 md:mb-8 leading-tight tracking-tight font-pt-serif"
           >
             Your entire health journey in one place
           </motion.h1>
@@ -100,7 +100,7 @@ export default function LandingPage() {
       </motion.section>
 
       {/* Features Section */}
-      <section id="features" className="max-w-6xl mx-auto px-6 py-32 scroll-mt-20">
+      <section id="features" className="max-w-6xl mx-auto px-6 py-16 md:py-32 scroll-mt-20">
         <motion.div
           variants={fadeUp}
           initial="hidden"
@@ -175,7 +175,7 @@ export default function LandingPage() {
 
       {/* Health Data Section */}
       <section className="max-w-6xl mx-auto px-6 py-20">
-        <div className="grid md:grid-cols-2 gap-16 mb-32">
+        <div className="grid md:grid-cols-2 gap-10 md:gap-16 mb-16 md:mb-32">
           <motion.div
             variants={fadeUp}
             initial="hidden"
@@ -219,7 +219,7 @@ export default function LandingPage() {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.3 }}
-            className="bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30 rounded-3xl p-16 flex items-center justify-center min-h-[400px]"
+            className="bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30 rounded-3xl p-8 md:p-16 flex items-center justify-center min-h-[240px] md:min-h-[400px]"
           >
             <svg className="w-32 h-32 text-blue-400 dark:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -227,13 +227,13 @@ export default function LandingPage() {
           </motion.div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-16">
+        <div className="grid md:grid-cols-2 gap-10 md:gap-16">
           <motion.div
             variants={fadeIn}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.3 }}
-            className="bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-3xl p-16 flex items-center justify-center min-h-[400px]"
+            className="bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-3xl p-8 md:p-16 flex items-center justify-center min-h-[240px] md:min-h-[400px]"
           >
             <svg className="w-32 h-32 text-purple-400 dark:text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -339,7 +339,7 @@ export default function LandingPage() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.3 }}
-        className="max-w-6xl mx-auto px-6 py-32"
+        className="max-w-6xl mx-auto px-6 py-16 md:py-32"
       >
         <div className="text-center">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-8 leading-tight font-lobster">

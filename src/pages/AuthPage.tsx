@@ -124,7 +124,7 @@ export default function AuthPage() {
       />
 
       {/* Top bar */}
-      <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-8 py-5 z-20">
+      <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 sm:px-8 py-4 sm:py-5 z-20">
         <Link to="/" className="flex items-center gap-2">
           <div className="w-9 h-9 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/30">
             <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -154,7 +154,7 @@ export default function AuthPage() {
       </div>
 
       {/* Main content */}
-      <div className="relative z-10 w-full max-w-5xl mx-auto px-6 py-24 flex flex-col lg:flex-row items-center gap-16">
+      <div className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 py-16 sm:py-24 flex flex-col lg:flex-row items-center gap-10 lg:gap-16">
 
         {/* Left: Branding */}
         <div className="hidden lg:flex flex-col flex-1 text-white">

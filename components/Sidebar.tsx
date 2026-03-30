@@ -22,7 +22,9 @@ export default function ChatSidebar({
   const { theme, toggleTheme } = useTheme()
   const navigate = useNavigate()
 
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768)
   const [isOpen, setIsOpen] = useState(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) return false
     const saved = localStorage.getItem('sidebar-open')
     return saved !== null ? saved === 'true' : true
   })
@@ -31,8 +33,18 @@ export default function ChatSidebar({
   const [showSettings, setShowSettings] = useState(false)
 
   useEffect(() => {
-    localStorage.setItem('sidebar-open', String(isOpen))
-  }, [isOpen])
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768
+      setIsMobile(mobile)
+      if (mobile) setIsOpen(false)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  useEffect(() => {
+    if (!isMobile) localStorage.setItem('sidebar-open', String(isOpen))
+  }, [isOpen, isMobile])
 
   useEffect(() => {
     if (isLoggedIn && user) {
@@ -71,9 +83,35 @@ export default function ChatSidebar({
   )
 
   return (
+    <>
+      {/* Mobile backdrop */}
+      {isMobile && isOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-40"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      {/* Mobile open button — shown when sidebar is hidden on mobile */}
+      {isMobile && !isOpen && (
+        <button
+          onClick={() => setIsOpen(true)}
+          title="Open sidebar"
+          className="fixed top-3 left-3 z-40 p-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-md text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+        >
+          <PanelLeftOpen size={18} />
+        </button>
+      )}
+
     <div
-      className={`h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transition-all duration-300 flex flex-col flex-shrink-0 z-10 ${
-        isOpen ? 'w-64' : 'w-14'
+      className={`h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transition-all duration-300 flex flex-col flex-shrink-0 ${
+        isMobile
+          ? isOpen
+            ? 'fixed top-0 left-0 z-50 w-72 shadow-xl'
+            : 'hidden'
+          : isOpen
+            ? 'w-64'
+            : 'w-14'
       }`}
     >
       {/* Header: toggle + new chat */}
@@ -270,5 +308,6 @@ export default function ChatSidebar({
         </button>
       </div>
     </div>
+    </>
   )
 }
