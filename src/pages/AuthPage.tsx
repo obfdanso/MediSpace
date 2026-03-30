@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useTheme } from '@/components/ThemeProvider'
+import { useAuth } from '@/components/AuthContext'
 import { ShieldCheck, Bot, FlaskConical, ClipboardList, Lock, Sun, Moon, ArrowRight } from 'lucide-react'
 
 type Tab = 'login' | 'signup'
@@ -8,6 +9,8 @@ type Tab = 'login' | 'signup'
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<Tab>('login')
   const { theme, toggleTheme } = useTheme()
+  const { signIn, signUp, signInWithGoogle, profile } = useAuth()
+  const navigate = useNavigate()
 
   const [loginEmail, setLoginEmail] = useState('')
   const [loginPassword, setLoginPassword] = useState('')
@@ -21,6 +24,7 @@ export default function AuthPage() {
   const [signupConfirm, setSignupConfirm] = useState('')
   const [signupLoading, setSignupLoading] = useState(false)
   const [signupError, setSignupError] = useState('')
+  const [signupSuccess, setSignupSuccess] = useState(false)
   const [showSignupPassword, setShowSignupPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
@@ -32,18 +36,17 @@ export default function AuthPage() {
       return
     }
     setLoginLoading(true)
-    try {
-      // TODO: Replace with real backend API call
-      // const res = await fetch('https://your-backend.com/api/auth/login', { ... })
-      // const data = await res.json()
-      // if (!res.ok) throw new Error(data.message)
-      // login(data.token)
-      // navigate('/')
-    } catch (err: any) {
-      setLoginError(err.message || 'Login failed. Please try again.')
-    } finally {
-      setLoginLoading(false)
+    const { error } = await signIn(loginEmail, loginPassword)
+    setLoginLoading(false)
+    if (error) {
+      setLoginError(error)
+      return
     }
+    // Check if onboarding is needed after profile loads
+    // Small delay to let profile state settle
+    setTimeout(() => {
+      navigate('/chat')
+    }, 100)
   }
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -62,36 +65,63 @@ export default function AuthPage() {
       return
     }
     setSignupLoading(true)
-    try {
-      // TODO: Replace with real backend API call
-      // login(data.token)
-      // navigate('/')
-    } catch (err: any) {
-      setSignupError(err.message || 'Signup failed. Please try again.')
-    } finally {
-      setSignupLoading(false)
+    const { error } = await signUp(signupEmail, signupPassword, signupName)
+    setSignupLoading(false)
+    if (error) {
+      setSignupError(error)
+      return
     }
+    setSignupSuccess(true)
   }
 
   const handleGoogleSignIn = async () => {
-    // TODO: Replace with backend Google OAuth
-    console.log('Google sign-in clicked')
+    const { error } = await signInWithGoogle()
+    if (error) {
+      setLoginError(error)
+    }
+  }
+
+  if (signupSuccess) {
+    return (
+      <div className="min-h-screen relative flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700" />
+        <div className="relative z-10 w-full max-w-md mx-auto px-6">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-white/50 dark:border-gray-700 p-10 text-center">
+            <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center mx-auto mb-5">
+              <svg className="w-8 h-8 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Check your email</h2>
+            <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">
+              We sent a confirmation link to <span className="font-semibold text-gray-700 dark:text-gray-300">{signupEmail}</span>. Click the link to activate your account.
+            </p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mb-6">
+              If you do not receive it within a few minutes, check your spam folder.
+            </p>
+            <button
+              onClick={() => { setSignupSuccess(false); setActiveTab('login') }}
+              className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-3 rounded-xl text-sm font-bold transition"
+            >
+              Back to Sign In
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="min-h-screen relative flex items-center justify-center overflow-hidden">
 
-      {/* ── FULL PAGE GREEN BACKGROUND ── */}
       <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700" />
 
-      {/* Background blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -left-40 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
         <div className="absolute top-1/2 -right-40 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
         <div className="absolute -bottom-40 left-1/3 w-96 h-96 bg-teal-400/20 rounded-full blur-3xl" />
       </div>
 
-      {/* Grid pattern */}
       <div
         className="absolute inset-0 opacity-10 pointer-events-none"
         style={{
@@ -101,7 +131,7 @@ export default function AuthPage() {
         }}
       />
 
-      {/* ── TOP BAR ── */}
+      {/* Top bar */}
       <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-8 py-5 z-20">
         <Link to="/" className="flex items-center gap-2">
           <div className="w-9 h-9 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/30">
@@ -131,10 +161,10 @@ export default function AuthPage() {
         </div>
       </div>
 
-      {/* ── MAIN CONTENT ── */}
+      {/* Main content */}
       <div className="relative z-10 w-full max-w-5xl mx-auto px-6 py-24 flex flex-col lg:flex-row items-center gap-16">
 
-        {/* ── LEFT: Branding ── */}
+        {/* Left: Branding */}
         <div className="hidden lg:flex flex-col flex-1 text-white">
           <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 mb-6 w-fit">
             <div className="w-2 h-2 bg-emerald-300 rounded-full animate-pulse" />
@@ -147,10 +177,9 @@ export default function AuthPage() {
             Join thousands of users who trust MediCare AI for smarter, safer health decisions.
           </p>
 
-          {/* Feature pills with icons */}
           <div className="space-y-3">
             {[
-              { icon: ShieldCheck, text: 'HIPAA Compliant & Secure' },
+              { icon: ShieldCheck, text: 'HIPAA Compliant and Secure' },
               { icon: Bot, text: 'AI-Powered Medical Insights' },
               { icon: FlaskConical, text: 'Drug Interaction Checker' },
               { icon: ClipboardList, text: 'Symptom Analysis' },
@@ -172,27 +201,24 @@ export default function AuthPage() {
           </p>
         </div>
 
-        {/* ── RIGHT: Floating Card ── */}
+        {/* Right: Auth card */}
         <div className="w-full lg:w-[420px] flex-shrink-0">
           <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl shadow-black/20 border border-white/50 dark:border-gray-700 overflow-hidden">
 
-            {/* Card header */}
             <div className="px-8 pt-8 pb-0">
               {activeTab === 'login' ? (
                 <>
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">Welcome back </h1>
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">Welcome back</h1>
                   <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">Sign in to continue to MediCare AI</p>
                 </>
               ) : (
                 <>
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">Create account </h1>
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">Create account</h1>
                   <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">Start your health journey for free</p>
                 </>
               )}
 
-              {/* Tabs — pill style with clear division */}
               <div className="relative flex bg-gray-100 dark:bg-gray-800 rounded-2xl p-1 mb-6 border border-gray-200 dark:border-gray-700">
-                {/* Sliding indicator */}
                 <div
                   className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl shadow-lg transition-all duration-300 ease-in-out ${
                     activeTab === 'login' ? 'left-1' : 'left-[calc(50%+3px)]'
@@ -206,8 +232,6 @@ export default function AuthPage() {
                 >
                   Log In
                 </button>
-                {/* Divider line */}
-                <div className={`relative z-10 w-px bg-gray-300 dark:bg-gray-600 my-1.5 transition-opacity duration-300 ${activeTab === 'login' || activeTab === 'signup' ? 'opacity-0' : 'opacity-100'}`} />
                 <button
                   onClick={() => { setActiveTab('signup'); setSignupError('') }}
                   className={`relative z-10 flex-1 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 ${
@@ -221,7 +245,7 @@ export default function AuthPage() {
 
             <div className="px-8 pb-8">
 
-              {/* Google Button */}
+              {/* Google sign-in */}
               <button
                 onClick={handleGoogleSignIn}
                 className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition mb-5 shadow-sm"
@@ -235,14 +259,13 @@ export default function AuthPage() {
                 Continue with Google
               </button>
 
-              {/* Divider */}
               <div className="flex items-center gap-3 mb-5">
                 <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
                 <span className="text-xs text-gray-400 dark:text-gray-500 font-medium">or with email</span>
                 <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
               </div>
 
-              {/* LOGIN FORM */}
+              {/* Login form */}
               {activeTab === 'login' && (
                 <form onSubmit={handleLogin} className="space-y-4">
                   {loginError && (
@@ -275,9 +298,6 @@ export default function AuthPage() {
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">Password</label>
-                      <button type="button" className="text-xs text-emerald-600 dark:text-emerald-400 hover:underline font-medium">
-                        Forgot password?
-                      </button>
                     </div>
                     <div className="relative">
                       <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
@@ -334,7 +354,7 @@ export default function AuthPage() {
                 </form>
               )}
 
-              {/* SIGNUP FORM */}
+              {/* Signup form */}
               {activeTab === 'signup' && (
                 <form onSubmit={handleSignup} className="space-y-4">
                   {signupError && (
@@ -474,7 +494,6 @@ export default function AuthPage() {
                 </form>
               )}
 
-              {/* Bottom trust badges with icons */}
               <div className="mt-6 pt-5 border-t border-gray-100 dark:border-gray-800 flex items-center justify-center gap-5">
                 <div className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
