@@ -24,6 +24,7 @@ export default function AuthPage() {
   const [signupConfirm, setSignupConfirm] = useState('')
   const [signupLoading, setSignupLoading] = useState(false)
   const [signupError, setSignupError] = useState('')
+  const [signupSuccess, setSignupSuccess] = useState(false)
   const [showSignupPassword, setShowSignupPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
@@ -69,13 +70,38 @@ export default function AuthPage() {
       setSignupError(error)
       return
     }
-    // Redirect immediately to the health profile page
-    setTimeout(() => {
-      navigate('/onboarding')
-    }, 100)
+    setSignupSuccess(true)
   }
 
-
+  if (signupSuccess) {
+    return (
+      <div className="min-h-screen relative flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700" />
+        <div className="relative z-10 w-full max-w-md mx-auto px-6">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-white/50 dark:border-gray-700 p-10 text-center">
+            <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center mx-auto mb-5">
+              <svg className="w-8 h-8 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Check your email</h2>
+            <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">
+              We sent a confirmation link to <span className="font-semibold text-gray-700 dark:text-gray-300">{signupEmail}</span>. Click the link to activate your account.
+            </p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mb-6">
+              If you do not receive it within a few minutes, check your spam folder.
+            </p>
+            <button
+              onClick={() => { setSignupSuccess(false); setActiveTab('login') }}
+              className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-3 rounded-xl text-sm font-bold transition"
+            >
+              Back to Sign In
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen relative flex items-center justify-center overflow-hidden">
