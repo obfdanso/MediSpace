@@ -44,7 +44,7 @@ export default function BillingPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-8 py-4 flex items-center justify-between">
+      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 sm:px-8 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
             <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -61,9 +61,10 @@ export default function BillingPage() {
         </button>
       </div>
 
-      <div className="px-8 py-8 max-w-5xl mx-auto">
+      <div className="px-4 sm:px-8 py-6 sm:py-8 max-w-5xl mx-auto">
         {/* Tabs */}
-        <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl w-fit mb-8">
+        <div className="overflow-x-auto mb-6 sm:mb-8">
+          <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl w-fit min-w-full sm:min-w-0">
           {([
             { id: "plan", label: "Plan & Billing", icon: CreditCard },
             { id: "profile", label: "Health Profile", icon: User },
@@ -72,7 +73,7 @@ export default function BillingPage() {
             <button
               key={id}
               onClick={() => setTab(id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-all flex-1 sm:flex-none whitespace-nowrap ${
                 tab === id
                   ? "bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm"
                   : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
@@ -82,6 +83,7 @@ export default function BillingPage() {
               {label}
             </button>
           ))}
+          </div>
         </div>
 
         {tab === "plan" && <PlanTab />}

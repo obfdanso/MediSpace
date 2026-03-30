@@ -13,6 +13,7 @@ const Navbar = () => {
   const { isLoggedIn, logout, profile, user, updatePassword } = useAuth()
   const [isScrolled, setIsScrolled] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [showChangePassword, setShowChangePassword] = useState(false)
   const [newPassword, setNewPassword] = useState('')
@@ -27,7 +28,10 @@ const Navbar = () => {
   const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
 
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 50)
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50)
+      if (window.scrollY > 50) setMobileMenuOpen(false)
+    }
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
@@ -146,6 +150,23 @@ const Navbar = () => {
             {/* Right Side */}
             <div className="flex items-center gap-2">
 
+              {/* Mobile hamburger */}
+              {!isScrolled && (
+                <button
+                  onClick={() => setMobileMenuOpen(o => !o)}
+                  className="lg:hidden p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                  aria-label="Toggle menu"
+                >
+                  {mobileMenuOpen ? (
+                    <X className="w-5 h-5" />
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                  )}
+                </button>
+              )}
+
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
@@ -219,6 +240,30 @@ const Navbar = () => {
               )}
             </div>
           </div>
+
+          {/* Mobile dropdown menu */}
+          {!isScrolled && mobileMenuOpen && (
+            <div className="lg:hidden border-t border-gray-200 dark:border-gray-800 mt-2 pt-2 pb-1 space-y-1">
+              {navLinks.map((link) => (
+                <button
+                  key={link.sectionId}
+                  onClick={() => { handleNavClick(link.href, link.sectionId); setMobileMenuOpen(false) }}
+                  className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                >
+                  {link.label}
+                </button>
+              ))}
+              {!isLoggedIn && (
+                <Link
+                  to="/auth"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-3 py-2 rounded-lg text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                >
+                  Sign In / Sign Up
+                </Link>
+              )}
+            </div>
+          )}
         </div>
       </nav>
 
