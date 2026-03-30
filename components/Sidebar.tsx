@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MessageSquare, Plus, Search, Settings, Trash2, PanelLeftClose, PanelLeftOpen, CreditCard, Zap } from 'lucide-react'
+import { MessageSquare, Plus, Search, Settings, Trash2, PanelLeftClose, PanelLeftOpen, CreditCard, Zap, LogOut, Home } from 'lucide-react'
 import { useAuth } from './AuthContext'
 import { useTheme } from './ThemeProvider'
 import { getConversations, deleteConversation, type Conversation } from '@/lib/supabase'
@@ -18,7 +18,7 @@ export default function ChatSidebar({
   onNewChat,
   refreshKey,
 }: ChatSidebarProps) {
-  const { isLoggedIn, user, profile } = useAuth()
+  const { isLoggedIn, user, profile, logout } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const navigate = useNavigate()
 
@@ -160,11 +160,11 @@ export default function ChatSidebar({
             )}
 
             {filtered.map(conv => (
-              <button
+              <div
                 key={conv.id}
                 onClick={() => onSelectConversation(conv.id)}
                 title={conv.title}
-                className={`w-full flex items-center gap-2.5 px-2 py-2 group transition ${
+                className={`w-full cursor-pointer flex items-center gap-2.5 px-2 py-2 group transition ${
                   activeConversationId === conv.id
                     ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400'
                     : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
@@ -187,7 +187,7 @@ export default function ChatSidebar({
                     </button>
                   </>
                 )}
-              </button>
+              </div>
             ))}
           </>
         )}
@@ -221,7 +221,7 @@ export default function ChatSidebar({
           {isLoggedIn && (
             <button
               onClick={() => navigate('/billing')}
-              className="w-full text-left text-sm text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 py-0.5 transition flex items-center gap-2"
+              className="w-full text-left text-sm text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 py-1 transition flex items-center gap-2"
             >
               <CreditCard size={14} />
               Billing & Plan
@@ -230,6 +230,27 @@ export default function ChatSidebar({
                   <Zap size={10} /> Pro
                 </span>
               )}
+            </button>
+          )}
+
+          <button
+            onClick={() => navigate('/')}
+            className="w-full text-left text-sm text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 py-1 transition flex items-center gap-2"
+          >
+            <Home size={14} />
+            Back to Home
+          </button>
+
+          {isLoggedIn && (
+            <button
+              onClick={async () => {
+                await logout()
+                navigate('/')
+              }}
+              className="w-full text-left text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 py-1 transition flex items-center gap-2"
+            >
+              <LogOut size={14} />
+              Log Out
             </button>
           )}
         </div>

@@ -29,9 +29,6 @@ function OnboardingGuard({ children }: { children: React.ReactNode }) {
       </div>
     )
   }
-  if (isLoggedIn && (!profile || !profile.onboarding_completed)) {
-    return <Navigate to="/onboarding" replace />
-  }
   return <>{children}</>
 }
 
@@ -47,8 +44,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
     </div>
   )
   if (isLoggedIn) {
-    if (!profile || !profile.onboarding_completed) return <Navigate to="/onboarding" replace />
-    return <Navigate to="/chat" replace />
+    return <Navigate to="/" replace />
   }
   return <>{children}</>
 }
@@ -88,8 +84,7 @@ function AuthCallbackPage() {
     )
   }
   if (!isLoggedIn) return <Navigate to="/auth" replace />
-  if (!profile || !profile.onboarding_completed) return <Navigate to="/onboarding" replace />
-  return <Navigate to="/chat" replace />
+  return <Navigate to="/" replace />
 }
 
 export default function App() {
