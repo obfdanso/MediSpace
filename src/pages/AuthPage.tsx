@@ -42,10 +42,9 @@ export default function AuthPage() {
       setLoginError(error)
       return
     }
-    // Check if onboarding is needed after profile loads
     // Small delay to let profile state settle
     setTimeout(() => {
-      navigate('/chat')
+      navigate('/')
     }, 100)
   }
 

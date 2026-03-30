@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Send, User, Bot, Paperclip, Loader2 } from "lucide-react";
+import { Send, User, Bot, Loader2 } from "lucide-react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/components/AuthContext";
 import { getMessages } from "@/lib/supabase";
@@ -175,14 +175,6 @@ export default function ChatUI({
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey) handleSend();
-  };
-
-  const handleFileUpload = () => {
-    if (!isLoggedIn) {
-      navigate("/auth");
-      return;
-    }
-    alert("File upload coming soon.");
   };
 
   const isLocked = !isLoggedIn && messageCount >= ANON_LIMIT;
@@ -385,14 +377,6 @@ export default function ChatUI({
               : "border-gray-300 dark:border-gray-700 focus-within:border-emerald-500/50 focus-within:ring-1 focus-within:ring-emerald-500/50"
           }`}
         >
-          <button
-            onClick={handleFileUpload}
-            className="text-gray-400 hover:text-emerald-500 transition flex-shrink-0"
-            title={isLoggedIn ? "Upload document" : "Sign in to upload documents"}
-          >
-            <Paperclip size={20} />
-          </button>
-
           <input
             type="text"
             value={input}
@@ -429,7 +413,7 @@ export default function ChatUI({
             >
               Sign in
             </button>
-            {" "}to upload documents and save your chat history
+            {" "}to save your chat history
           </p>
         )}
       </div>
@@ -452,11 +436,16 @@ function StreamingText({ full, onCaughtUp }: { full: string; onCaughtUp: () => v
   useEffect(() => { onCaughtUpRef.current = onCaughtUp; });
 
   useEffect(() => {
+    if (shown >= fullRef.current.length) {
+      onCaughtUpRef.current();
+    }
+  }, [shown]);
+
+  useEffect(() => {
     const id = setInterval(() => {
       setShown(prev => {
         const target = fullRef.current;
         if (prev >= target.length) {
-          onCaughtUpRef.current();
           return prev;
         }
 
