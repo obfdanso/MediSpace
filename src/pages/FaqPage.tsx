@@ -5,13 +5,7 @@ export default function FaqPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950 relative">
       <div className="fixed inset-0 -z-10">
-        <AuroraShaders
-          speed={0.5}
-          intensity={0.3}
-          vibrancy={0.8}
-          frequency={1.2}
-          stretch={1.5}
-        />
+        <AuroraShaders />
       </div>
       <Navbar />
       <div className="pt-32 pb-16 px-4 sm:px-6 lg:px-8">
