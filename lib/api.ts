@@ -1,10 +1,11 @@
 /**
- * Frontend client for the MediSpace backend API.
+ * Frontend client for the MediSpace API (see the api/ folder).
  * Handles auth headers, streaming chat responses, and error normalisation.
  */
 import { supabase } from '@/lib/supabase'
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:3001'
+// The API lives in this repo's api/ folder and is served from the same domain
+const BACKEND_URL = ''
 
 async function authHeaders(extra: Record<string, string> = {}): Promise<Record<string, string>> {
   const { data: { session } } = await supabase.auth.getSession()
