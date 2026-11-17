@@ -30,8 +30,9 @@ export async function switchPlan(req: Request, to: 'free' | 'premium'): Promise<
   if (caller.tier === to) {
     return json({ error: to === 'premium' ? 'Already on the Premium plan.' : 'Already on the Free plan.' }, 400)
   }
-  const { error } = await db.from('profiles').update({ tier: to }).eq('id', caller.userId)
-  if (error) return json({ error: 'Could not change your plan. Please try again.' }, 500)
+  const { data: updated, error } = await db
+    .from('profiles').update({ tier: to }).eq('id', caller.userId).select('id')
+  if (error || !updated?.length) return json({ error: 'Could not change your plan. Please try again.' }, 500)
   return json({
     success: true,
     message: to === 'premium' ? 'Upgraded to Premium successfully.' : 'Downgraded to Free plan.',
