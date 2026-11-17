@@ -9,7 +9,7 @@ type Tab = 'login' | 'signup'
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<Tab>('login')
   const { theme, toggleTheme } = useTheme()
-  const { signIn, signUp, profile } = useAuth()
+  const { signIn, signUp } = useAuth()
   const navigate = useNavigate()
 
   const [loginEmail, setLoginEmail] = useState('')

@@ -66,14 +66,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const signUp = async (email: string, password: string, fullName: string) => {
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: { full_name: fullName },
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     })
     if (error) return { error: error.message }
+    // Supabase reports an already-registered email as a success with no identities
+    if (data.user && data.user.identities?.length === 0) {
+      return { error: 'An account with this email already exists. Try logging in instead.' }
+    }
     return { error: null }
   }
 
