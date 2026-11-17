@@ -140,7 +140,6 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{feature.title}</h3>
                 <p className="text-gray-600 dark:text-gray-300">{feature.desc}</p>
-                <p className="text-emerald-600 dark:text-emerald-400 text-sm font-medium mt-4">Try it →</p>
               </Link>
             </motion.div>
           ))}
