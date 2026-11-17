@@ -36,7 +36,10 @@ const GROUPS = ['Today', 'Yesterday', 'Previous 7 days', 'Older'] as const
 function groupOf(dateStr: string): typeof GROUPS[number] {
   const startOfToday = new Date()
   startOfToday.setHours(0, 0, 0, 0)
-  const diffDays = Math.floor((startOfToday.getTime() - new Date(dateStr).getTime()) / 86_400_000) + 1
+  const startOfThatDay = new Date(dateStr)
+  startOfThatDay.setHours(0, 0, 0, 0)
+  // Rounded so a 23 or 25 hour day around a clock change still counts as one day
+  const diffDays = Math.round((startOfToday.getTime() - startOfThatDay.getTime()) / 86_400_000)
   if (diffDays <= 0) return 'Today'
   if (diffDays === 1) return 'Yesterday'
   if (diffDays < 7) return 'Previous 7 days'
