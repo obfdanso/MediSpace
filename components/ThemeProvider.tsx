@@ -9,44 +9,53 @@ type ThemeContextType = {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
+const systemQuery = () => window.matchMedia('(prefers-color-scheme: dark)')
+
+function readSaved(): Theme | null {
+  try {
+    const saved = localStorage.getItem('theme')
+    if (saved === 'light' || saved === 'dark') return saved
+  } catch { /* storage unavailable */ }
+  return null
+}
+
+function applyTheme(theme: Theme) {
+  const root = document.documentElement
+  root.classList.remove('light', 'dark')
+  root.classList.add(theme)
+}
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  // Read the saved theme up front so dark-mode users don't get a light flash
+  // Follow the system theme unless the user has picked one with the toggle
   const [theme, setTheme] = useState<Theme>(() => {
-    let initial: Theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-    try {
-      const saved = localStorage.getItem('theme')
-      if (saved === 'light' || saved === 'dark') initial = saved
-    } catch { /* storage unavailable */ }
+    const initial = readSaved() ?? (systemQuery().matches ? 'dark' : 'light')
     // Applied here, not in an effect, so the first paint already has the class
-    document.documentElement.classList.add(initial)
+    applyTheme(initial)
     return initial
   })
-  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') as Theme | null
-    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-    const initialTheme = savedTheme || systemTheme
-    
-    setTheme(initialTheme)
-    document.documentElement.classList.add(initialTheme)
-    setMounted(true)
+    applyTheme(theme)
+  }, [theme])
+
+  // Track OS theme changes while there is no manual override
+  useEffect(() => {
+    const query = systemQuery()
+    const onChange = (e: MediaQueryListEvent) => {
+      if (!readSaved()) setTheme(e.matches ? 'dark' : 'light')
+    }
+    query.addEventListener('change', onChange)
+    return () => query.removeEventListener('change', onChange)
   }, [])
 
-  useEffect(() => {
-    if (mounted) {
-      const root = document.documentElement
-      root.classList.remove('light', 'dark')
-      root.classList.add(theme)
-      localStorage.setItem('theme', theme)
-    }
-  }, [theme, mounted])
-
   const toggleTheme = () => {
-    setTheme(prev => prev === 'light' ? 'dark' : 'light')
+    setTheme(prev => {
+      const next = prev === 'light' ? 'dark' : 'light'
+      try { localStorage.setItem('theme', next) } catch { /* storage unavailable */ }
+      return next
+    })
   }
 
-  // Provide a default context value even before mounting
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
       {children}
