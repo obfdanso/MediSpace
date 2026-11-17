@@ -3,7 +3,7 @@ import AuroraShaders from "@/components/ui/aurora";
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950 relative">
+    <div className="min-h-screen bg-white dark:bg-gray-950 relative isolate">
       <div className="fixed inset-0 -z-10">
         <AuroraShaders />
       </div>
