@@ -39,8 +39,13 @@ const COMMON_ALLERGIES = [
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function OnboardingPage() {
-  const { user, profile, refreshProfile } = useAuth()
+  const { user, profile, refreshProfile, isLoading: authLoading } = useAuth()
   const navigate = useNavigate()
+
+  // The form can't save without an account, so send guests to sign in
+  useEffect(() => {
+    if (!authLoading && !user) navigate('/auth', { replace: true })
+  }, [authLoading, user, navigate])
   const isEditMode = !!profile?.onboarding_completed
 
   const [step, setStep] = useState(0)

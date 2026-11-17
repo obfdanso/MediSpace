@@ -29,12 +29,17 @@ function OnboardingGuard({ children }: { children: React.ReactNode }) {
       </div>
     )
   }
+  // Only once the profile has loaded, so a signed-in user whose profile is
+  // still being fetched isn't bounced to onboarding by mistake
+  if (isLoggedIn && profile && !profile.onboarding_completed) {
+    return <Navigate to="/onboarding" replace />
+  }
   return <>{children}</>
 }
 
 // Redirects already-logged-in users away from the auth page
 function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { isLoggedIn, profile, isLoading } = useAuth()
+  const { isLoggedIn, isLoading } = useAuth()
   if (isLoading) return (
     <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-950">
       <svg className="animate-spin w-8 h-8 text-emerald-600" fill="none" viewBox="0 0 24 24">
