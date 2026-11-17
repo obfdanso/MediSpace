@@ -61,6 +61,17 @@ export async function getCaller(req: Request): Promise<Caller> {
 
 const today = () => new Date().toISOString().slice(0, 10)
 
+/** Messages used today, read-only (the browser can't query daily_usage itself). */
+export async function getTodayUsage(caller: Caller): Promise<number> {
+  if (!db) return 0
+  let query = db.from('daily_usage').select('message_count').eq('date', today())
+  query = caller.userId
+    ? query.eq('user_id', caller.userId)
+    : query.eq('ip_address', caller.ip).is('user_id', null)
+  const { data } = await query.maybeSingle()
+  return data?.message_count ?? 0
+}
+
 /**
  * Atomically claims one message from today's allowance.
  * Returns the new count, or null if the limit was already reached.

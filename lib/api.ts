@@ -108,6 +108,22 @@ export async function sendChatMessage(params: {
   return result
 }
 
+export interface Usage {
+  usageToday: number
+  usageLimit: number
+  usageLeft: number
+}
+
+/** Today's message allowance for whoever is calling (signed in or not). */
+export async function getUsage(): Promise<Usage | null> {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/usage`, { headers: await authHeaders() })
+    return res.ok ? await res.json() : null
+  } catch {
+    return null
+  }
+}
+
 // ─── Billing ──────────────────────────────────────────────────────────────────
 
 export interface Plan {
