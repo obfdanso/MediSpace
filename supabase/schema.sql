@@ -12,10 +12,17 @@ create table if not exists public.profiles (
   id                    uuid references auth.users(id) on delete cascade primary key,
   full_name             text,
   onboarding_completed  boolean not null default false,
+  tier                  text not null default 'free' check (tier in ('free', 'premium')),
   created_at            timestamptz not null default now()
 );
 
 alter table public.profiles enable row level security;
+
+-- Users may edit their name and onboarding flag, but not their plan.
+-- The plan is only changed by the server (api/billing) with the secret key.
+revoke insert, update on public.profiles from anon, authenticated;
+grant insert (id, full_name, onboarding_completed) on public.profiles to authenticated;
+grant update (id, full_name, onboarding_completed) on public.profiles to authenticated;
 
 create policy "Users can view their own profile"
   on public.profiles for select
@@ -119,6 +126,52 @@ create policy "Users can manage messages in their conversations"
       where id = conversation_id
     )
   );
+
+create index if not exists idx_conversations_user_updated on public.conversations (user_id, updated_at desc);
+create index if not exists idx_messages_conversation_created on public.messages (conversation_id, created_at);
+
+-- ── Daily usage (message limits) ──────────────────────────────────────────────
+-- Only the server touches this table, using the secret key.
+create table if not exists public.daily_usage (
+  id             uuid        default gen_random_uuid() primary key,
+  user_id        uuid        references auth.users(id) on delete cascade,
+  ip_address     text,
+  date           date        not null default current_date,
+  message_count  integer     not null default 0,
+  updated_at     timestamptz default now(),
+  constraint uq_user_date unique (user_id, date),
+  constraint uq_ip_date   unique (ip_address, date),
+  constraint chk_identity check (user_id is not null or ip_address is not null)
+);
+
+alter table public.daily_usage enable row level security;
+-- No policies on purpose: the browser can't read or write it
+
+create or replace function public.increment_daily_usage_user(p_user_id uuid, p_date date)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  insert into daily_usage (user_id, ip_address, date, message_count)
+    values (p_user_id, null, p_date, 1)
+  on conflict (user_id, date)
+  do update set message_count = daily_usage.message_count + 1, updated_at = now();
+end;
+$$;
+
+create or replace function public.increment_daily_usage_ip(p_ip text, p_date date)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  insert into daily_usage (user_id, ip_address, date, message_count)
+    values (null, p_ip, p_date, 1)
+  on conflict (ip_address, date)
+  do update set message_count = daily_usage.message_count + 1, updated_at = now();
+end;
+$$;
+
+-- Only the server may call these
+revoke execute on function public.increment_daily_usage_user(uuid, date) from public, anon, authenticated;
+revoke execute on function public.increment_daily_usage_ip(text, date) from public, anon, authenticated;
+grant execute on function public.increment_daily_usage_user(uuid, date) to service_role;
+grant execute on function public.increment_daily_usage_ip(text, date) to service_role;
 
 -- ─── Contact messages ────────────────────────────────────────────────────────
 -- Written by the public contact form. Anyone may send one; nobody can read
