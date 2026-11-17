@@ -105,7 +105,9 @@ export async function POST(req: Request): Promise<Response> {
     // The model may have been retired: pick one Groq still offers and retry once
     if (!upstream.ok && (upstream.status === 400 || upstream.status === 404)) {
       const detail = await upstream.clone().text().catch(() => '')
-      if (/model/i.test(detail)) {
+      let code = ''
+      try { code = JSON.parse(detail)?.error?.code ?? '' } catch { /* not json */ }
+      if (/model_(decommissioned|not_found)/.test(code) || /model.*(decommissioned|does not exist|not found)/i.test(detail)) {
         const fallback = await pickAvailableModel(apiKey)
         if (fallback) {
           console.warn(`[chat] model unavailable, using ${fallback}. Set GROQ_MODEL to skip this lookup.`)
@@ -144,8 +146,11 @@ export async function POST(req: Request): Promise<Response> {
     conversationId = conv?.id ?? null
   }
 
+  let userMessageId: string | null = null
   if (db && conversationId) {
-    await db.from('messages').insert({ conversation_id: conversationId, role: 'user', content: message })
+    const { data: saved } = await db
+      .from('messages').insert({ conversation_id: conversationId, role: 'user', content: message }).select('id').single()
+    userMessageId = saved?.id ?? null
   }
 
   const usedToday = newUsage
@@ -153,9 +158,17 @@ export async function POST(req: Request): Promise<Response> {
   const decoder = new TextDecoder()
   const reader = upstream.body.getReader()
 
+  // If the visitor leaves mid-reply we keep reading, so the full answer is
+  // still saved to their chat; we just stop sending to the closed connection
+  let clientGone = false
+
   const stream = new ReadableStream({
     async start(controller) {
-      const send = (data: unknown) => controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`))
+      const write = (text: string) => {
+        if (clientGone) return
+        try { controller.enqueue(encoder.encode(text)) } catch { clientGone = true }
+      }
+      const send = (data: unknown) => write(`data: ${JSON.stringify(data)}\n\n`)
       let reply = ''
       let buffer = ''
 
@@ -171,13 +184,12 @@ export async function POST(req: Request): Promise<Response> {
             if (!line.startsWith('data: ')) continue
             const raw = line.slice(6).trim()
             if (raw === '[DONE]') continue
-            try {
-              const chunk = JSON.parse(raw)?.choices?.[0]?.delta?.content
-              if (chunk) {
-                reply += chunk
-                send({ type: 'delta', content: chunk })
-              }
-            } catch { /* ignore partial lines */ }
+            let chunk: string | undefined
+            try { chunk = JSON.parse(raw)?.choices?.[0]?.delta?.content } catch { /* ignore partial lines */ }
+            if (chunk) {
+              reply += chunk
+              send({ type: 'delta', content: chunk })
+            }
           }
         }
 
@@ -195,13 +207,22 @@ export async function POST(req: Request): Promise<Response> {
           usageLimit: limit,
           usageLeft: Math.max(0, limit - usedToday),
         })
-        controller.enqueue(encoder.encode('data: [DONE]\n\n'))
+        write('data: [DONE]\n\n')
       } catch (err) {
         console.error('[chat] stream error', err)
+        // Nothing usable came back: give the message back and drop the
+        // unanswered question so the chat history stays in pairs
+        await refundMessage(caller).catch(() => {})
+        if (db && userMessageId) await db.from('messages').delete().eq('id', userMessageId)
         send({ type: 'error', message: 'The reply was interrupted. Please try again.' })
       } finally {
-        controller.close()
+        if (!clientGone) {
+          try { controller.close() } catch { /* already closed */ }
+        }
       }
+    },
+    cancel() {
+      clientGone = true
     },
   })
 
