@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MessageSquare, Plus, Search, Settings, Trash2, PanelLeftClose, PanelLeftOpen, CreditCard, Zap, LogOut, Home } from 'lucide-react'
+import { Plus, Search, Trash2, PanelLeftClose, PanelLeftOpen, CreditCard, Zap, LogOut, Home, Sun, Moon, MessageSquare, ChevronsUpDown, LogIn } from 'lucide-react'
 import { useAuth } from './AuthContext'
 import { useTheme } from './ThemeProvider'
 import { getConversations, deleteConversation, type Conversation } from '@/lib/supabase'
@@ -10,6 +10,18 @@ interface ChatSidebarProps {
   onSelectConversation: (id: string) => void
   onNewChat: () => void
   refreshKey?: number
+}
+
+const GROUPS = ['Today', 'Yesterday', 'Previous 7 days', 'Older'] as const
+
+function groupOf(dateStr: string): typeof GROUPS[number] {
+  const startOfToday = new Date()
+  startOfToday.setHours(0, 0, 0, 0)
+  const diffDays = Math.floor((startOfToday.getTime() - new Date(dateStr).getTime()) / 86_400_000) + 1
+  if (diffDays <= 0) return 'Today'
+  if (diffDays === 1) return 'Yesterday'
+  if (diffDays < 7) return 'Previous 7 days'
+  return 'Older'
 }
 
 export default function ChatSidebar({
@@ -25,12 +37,15 @@ export default function ChatSidebar({
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768)
   const [isOpen, setIsOpen] = useState(() => {
     if (typeof window !== 'undefined' && window.innerWidth < 768) return false
-    const saved = localStorage.getItem('sidebar-open')
-    return saved !== null ? saved === 'true' : true
+    try {
+      const saved = localStorage.getItem('sidebar-open')
+      return saved !== null ? saved === 'true' : true
+    } catch { return true }
   })
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [searchQuery, setSearchQuery] = useState('')
-  const [showSettings, setShowSettings] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const handleResize = () => {
@@ -43,8 +58,25 @@ export default function ChatSidebar({
   }, [])
 
   useEffect(() => {
-    if (!isMobile) localStorage.setItem('sidebar-open', String(isOpen))
+    if (!isMobile) {
+      try { localStorage.setItem('sidebar-open', String(isOpen)) } catch { /* storage unavailable */ }
+    }
   }, [isOpen, isMobile])
+
+  // Close the account menu on outside click or Escape
+  useEffect(() => {
+    if (!menuOpen) return
+    const onDown = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenuOpen(false) }
+    document.addEventListener('mousedown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [menuOpen])
 
   useEffect(() => {
     if (isLoggedIn && user) {
@@ -52,6 +84,7 @@ export default function ChatSidebar({
     } else {
       setConversations([])
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoggedIn, user?.id, refreshKey])
 
   const loadConversations = async () => {
@@ -68,246 +101,214 @@ export default function ChatSidebar({
     if (activeConversationId === id) onNewChat()
   }
 
-  const formatDate = (dateStr: string) => {
-    const d = new Date(dateStr)
-    const now = new Date()
-    const diffDays = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24))
-    if (diffDays === 0) return 'Today'
-    if (diffDays === 1) return 'Yesterday'
-    if (diffDays < 7) return `${diffDays}d ago`
-    return d.toLocaleDateString()
+  const startNewChat = () => {
+    onNewChat()
+    if (isMobile) setIsOpen(false)
   }
 
   const filtered = conversations.filter(c =>
     c.title.toLowerCase().includes(searchQuery.toLowerCase())
   )
+  const grouped = GROUPS
+    .map(label => ({ label, items: filtered.filter(c => groupOf(c.updated_at) === label) }))
+    .filter(g => g.items.length > 0)
+
+  const displayName = profile?.full_name?.trim() || user?.email?.split('@')[0] || 'Guest'
+  const initials = displayName.split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase()
+  const isPro = profile?.tier === 'premium'
+
+  const iconBtn = 'p-2 rounded-lg text-stone-500 dark:text-stone-400 hover:bg-stone-200/70 dark:hover:bg-stone-800 hover:text-stone-900 dark:hover:text-stone-100 transition flex-shrink-0'
+  const menuItem = 'w-full flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700/60 transition text-left'
 
   return (
     <>
       {/* Mobile backdrop */}
       {isMobile && isOpen && (
-        <div
-          className="fixed inset-0 bg-black/40 z-40"
-          onClick={() => setIsOpen(false)}
-        />
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-[2px] z-40" onClick={() => setIsOpen(false)} />
       )}
 
-      {/* Mobile open button — shown when sidebar is hidden on mobile */}
+      {/* Mobile open button, shown when the sidebar is hidden on phones */}
       {isMobile && !isOpen && (
         <button
           onClick={() => setIsOpen(true)}
           title="Open sidebar"
-          className="fixed top-3 left-3 z-40 p-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-md text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+          className="fixed top-2.5 left-3 z-40 p-2 rounded-lg text-stone-600 dark:text-stone-300 hover:bg-stone-200/70 dark:hover:bg-stone-800 transition"
         >
-          <PanelLeftOpen size={18} />
+          <PanelLeftOpen size={20} />
         </button>
       )}
 
-    <div
-      className={`h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transition-all duration-300 flex flex-col flex-shrink-0 ${
-        isMobile
-          ? isOpen
-            ? 'fixed top-0 left-0 z-50 w-72 shadow-xl'
-            : 'hidden'
-          : isOpen
-            ? 'w-64'
-            : 'w-14'
-      }`}
-    >
-      {/* Header: toggle + new chat */}
-      <div className="flex items-center gap-1 p-2 border-b border-gray-200 dark:border-gray-800">
-        <button
-          onClick={() => setIsOpen(o => !o)}
-          title={isOpen ? 'Collapse sidebar' : 'Expand sidebar'}
-          className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition flex-shrink-0"
-        >
-          {isOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
-        </button>
-
-        {isOpen && (
+      <aside
+        className={`h-full bg-stone-100 dark:bg-stone-950 border-r border-stone-200/80 dark:border-stone-800/80 transition-[width] duration-200 flex flex-col flex-shrink-0 ${
+          isMobile
+            ? isOpen ? 'fixed top-0 left-0 z-50 w-72 shadow-2xl' : 'hidden'
+            : isOpen ? 'w-64' : 'w-14'
+        }`}
+      >
+        {/* Header */}
+        <div className={`flex items-center h-14 px-2 ${isOpen ? 'justify-between' : 'justify-center'}`}>
+          {isOpen && (
+            <button onClick={() => navigate('/')} className="px-2 font-pt-serif text-lg font-bold text-stone-900 dark:text-stone-100 truncate">
+              MediSpace
+            </button>
+          )}
           <button
-            onClick={onNewChat}
-            title="New Chat"
-            className="flex-1 flex items-center gap-2 px-2 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition text-sm font-medium"
+            onClick={() => setIsOpen(o => !o)}
+            title={isOpen ? 'Close sidebar' : 'Open sidebar'}
+            className={iconBtn}
           >
-            <Plus size={16} className="flex-shrink-0" />
-            New Chat
+            {isOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
           </button>
-        )}
-
-        {!isOpen && (
-          <button
-            onClick={onNewChat}
-            title="New Chat"
-            className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition"
-          >
-            <Plus size={18} />
-          </button>
-        )}
-      </div>
-
-      {/* Search (only when open) */}
-      {isOpen && (
-        <div className="px-2 pt-2 pb-1 border-b border-gray-200 dark:border-gray-800">
-          <div className="relative">
-            <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Search chats..."
-              className="w-full pl-8 pr-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-            />
-          </div>
         </div>
-      )}
 
-      {/* Conversations List */}
-      <div className="flex-1 overflow-y-auto py-2">
-        {!isLoggedIn ? (
-          isOpen ? (
-            <div className="px-3 py-6 text-center">
-              <MessageSquare size={22} className="mx-auto mb-2 text-gray-400" />
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-3 leading-relaxed">
-                Sign in to save and view your chat history
+        {/* New chat */}
+        <div className="px-2">
+          <button
+            onClick={startNewChat}
+            title="New chat"
+            className={`w-full flex items-center gap-2.5 rounded-lg p-1.5 text-sm font-medium text-stone-800 dark:text-stone-100 hover:bg-stone-200/70 dark:hover:bg-stone-800 transition ${isOpen ? '' : 'justify-center'}`}
+          >
+            <span className="h-7 w-7 flex items-center justify-center rounded-full bg-emerald-600 text-white flex-shrink-0 shadow-sm">
+              <Plus size={16} strokeWidth={2.5} />
+            </span>
+            {isOpen && 'New chat'}
+          </button>
+        </div>
+
+        {/* Search */}
+        {isOpen && isLoggedIn && (
+          <div className="px-2 mt-2">
+            <div className="relative">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Search chats"
+                className="w-full pl-8 pr-3 py-1.5 text-sm bg-transparent rounded-lg text-stone-900 dark:text-stone-100 placeholder-stone-400 hover:bg-stone-200/50 dark:hover:bg-stone-900 focus:bg-white dark:focus:bg-stone-900 focus:outline-none focus:ring-1 focus:ring-stone-300 dark:focus:ring-stone-700 transition"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Conversations */}
+        <nav className="flex-1 overflow-y-auto px-2 py-3">
+          {!isOpen ? null : !isLoggedIn ? (
+            <div className="mx-1 mt-2 rounded-xl border border-stone-200 dark:border-stone-800 bg-white/60 dark:bg-stone-900/60 p-4 text-center">
+              <MessageSquare size={20} className="mx-auto mb-2 text-stone-400" />
+              <p className="text-xs text-stone-500 dark:text-stone-400 mb-3 leading-relaxed">
+                Sign in to save and revisit your chats
               </p>
               <button
                 onClick={() => navigate('/auth')}
-                className="text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-full transition"
+                className="text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 px-3.5 py-1.5 rounded-full transition"
               >
-                Sign In
+                Sign in
               </button>
             </div>
+          ) : grouped.length === 0 ? (
+            <p className="px-3 py-2 text-xs text-stone-400 dark:text-stone-500">
+              {searchQuery ? 'No chats match your search' : 'No chats yet'}
+            </p>
           ) : (
-            <div className="flex justify-center py-3">
-              <MessageSquare size={18} className="text-gray-400" />
-            </div>
-          )
-        ) : (
-          <>
-            {isOpen && (
-              <p className="px-3 py-1 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-                Recent Chats
-              </p>
-            )}
-
-            {filtered.length === 0 && isOpen && (
-              <p className="px-3 py-2 text-xs text-gray-400 dark:text-gray-500 italic">
-                {searchQuery ? 'No results' : 'No chats yet'}
-              </p>
-            )}
-
-            {filtered.map(conv => (
-              <div
-                key={conv.id}
-                onClick={() => { onSelectConversation(conv.id); if (isMobile) setIsOpen(false) }}
-                title={conv.title}
-                className={`w-full cursor-pointer flex items-center gap-2.5 px-2 py-2 group transition ${
-                  activeConversationId === conv.id
-                    ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-                } ${isOpen ? '' : 'justify-center'}`}
-              >
-                <MessageSquare size={15} className="flex-shrink-0" />
-                {isOpen && (
-                  <>
-                    <div className="flex-1 text-left min-w-0">
-                      <div className="text-sm truncate">{conv.title}</div>
-                      <div className="text-xs text-gray-400 dark:text-gray-500">
-                        {formatDate(conv.updated_at)}
-                      </div>
-                    </div>
-                    <button
-                      onClick={e => handleDelete(conv.id, e)}
-                      className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-100 dark:hover:bg-red-900/20 rounded transition flex-shrink-0"
+            grouped.map(group => (
+              <div key={group.label} className="mb-4">
+                <p className="px-3 pb-1 text-xs font-medium text-stone-400 dark:text-stone-500">{group.label}</p>
+                {group.items.map(conv => {
+                  const active = activeConversationId === conv.id
+                  return (
+                    <div
+                      key={conv.id}
+                      onClick={() => { onSelectConversation(conv.id); if (isMobile) setIsOpen(false) }}
+                      title={conv.title}
+                      className={`group relative flex items-center rounded-lg px-3 py-1.5 cursor-pointer text-sm transition ${
+                        active
+                          ? 'bg-stone-200/80 dark:bg-stone-800 text-stone-900 dark:text-stone-100'
+                          : 'text-stone-600 dark:text-stone-400 hover:bg-stone-200/50 dark:hover:bg-stone-900 hover:text-stone-900 dark:hover:text-stone-100'
+                      }`}
                     >
-                      <Trash2 size={13} className="text-red-500 dark:text-red-400" />
-                    </button>
-                  </>
-                )}
+                      <span className="flex-1 truncate">{conv.title}</span>
+                      <button
+                        onClick={e => handleDelete(conv.id, e)}
+                        title="Delete chat"
+                        className="ml-1 p-1 rounded opacity-0 group-hover:opacity-100 focus:opacity-100 text-stone-400 hover:text-red-600 dark:hover:text-red-400 transition flex-shrink-0"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  )
+                })}
               </div>
-            ))}
-          </>
-        )}
-      </div>
+            ))
+          )}
+        </nav>
 
-      {/* Settings Panel */}
-      {showSettings && isOpen && (
-        <div className="border-t border-gray-200 dark:border-gray-800 px-3 py-3 space-y-3">
-          <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-            Settings
-          </p>
-
-          {/* Theme Toggle */}
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-700 dark:text-gray-300">Dark Mode</span>
-            <button
-              onClick={toggleTheme}
-              className={`relative w-10 h-5 rounded-full transition-colors ${
-                theme === 'dark' ? 'bg-emerald-600' : 'bg-gray-300'
-              }`}
-            >
-              <span
-                className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${
-                  theme === 'dark' ? 'translate-x-5' : 'translate-x-0'
-                }`}
-              />
-            </button>
-          </div>
-
-          {/* Billing & Settings */}
-          {isLoggedIn && (
-            <button
-              onClick={() => navigate('/billing')}
-              className="w-full text-left text-sm text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 py-1 transition flex items-center gap-2"
-            >
-              <CreditCard size={14} />
-              Billing & Plan
-              {profile?.tier === 'premium' && (
-                <span className="ml-auto text-xs font-semibold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
-                  <Zap size={10} /> Pro
-                </span>
+        {/* Account */}
+        <div ref={menuRef} className="relative p-2 border-t border-stone-200/80 dark:border-stone-800/80">
+          {menuOpen && (
+            <div className={`absolute bottom-full mb-2 z-50 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 p-1.5 shadow-xl ${isOpen ? 'left-2 right-2' : 'left-2 w-56'}`}>
+              {isLoggedIn && user?.email && (
+                <p className="px-3 py-2 text-xs text-stone-500 dark:text-stone-400 truncate">{user.email}</p>
               )}
-            </button>
+              <button onClick={toggleTheme} className={menuItem}>
+                {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+                {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+              </button>
+              {isLoggedIn && (
+                <button onClick={() => navigate('/billing')} className={menuItem}>
+                  <CreditCard size={15} />
+                  Billing & plan
+                  {isPro && (
+                    <span className="ml-auto text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
+                      <Zap size={10} /> Pro
+                    </span>
+                  )}
+                </button>
+              )}
+              <button onClick={() => navigate('/')} className={menuItem}>
+                <Home size={15} />
+                Back to home
+              </button>
+              <div className="my-1 h-px bg-stone-200 dark:bg-stone-700" />
+              {isLoggedIn ? (
+                <button
+                  onClick={async () => { await logout(); navigate('/') }}
+                  className={`${menuItem} text-red-600 dark:text-red-400`}
+                >
+                  <LogOut size={15} />
+                  Log out
+                </button>
+              ) : (
+                <button onClick={() => navigate('/auth')} className={menuItem}>
+                  <LogIn size={15} />
+                  Sign in
+                </button>
+              )}
+            </div>
           )}
 
           <button
-            onClick={() => navigate('/')}
-            className="w-full text-left text-sm text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 py-1 transition flex items-center gap-2"
+            onClick={() => setMenuOpen(o => !o)}
+            title="Account and settings"
+            className={`w-full flex items-center gap-2.5 rounded-lg p-1.5 hover:bg-stone-200/70 dark:hover:bg-stone-800 transition ${isOpen ? '' : 'justify-center'} ${menuOpen ? 'bg-stone-200/70 dark:bg-stone-800' : ''}`}
           >
-            <Home size={14} />
-            Back to Home
+            <span className="h-8 w-8 flex items-center justify-center rounded-full bg-stone-800 dark:bg-stone-200 text-white dark:text-stone-900 text-xs font-semibold flex-shrink-0">
+              {initials || '?'}
+            </span>
+            {isOpen && (
+              <>
+                <span className="flex-1 min-w-0 text-left">
+                  <span className="block text-sm font-medium text-stone-900 dark:text-stone-100 truncate">{displayName}</span>
+                  <span className="block text-xs text-stone-500 dark:text-stone-400">
+                    {!isLoggedIn ? 'Not signed in' : isPro ? 'Pro plan' : 'Free plan'}
+                  </span>
+                </span>
+                <ChevronsUpDown size={15} className="text-stone-400 flex-shrink-0" />
+              </>
+            )}
           </button>
-
-          {isLoggedIn && (
-            <button
-              onClick={async () => {
-                await logout()
-                navigate('/')
-              }}
-              className="w-full text-left text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 py-1 transition flex items-center gap-2"
-            >
-              <LogOut size={14} />
-              Log Out
-            </button>
-          )}
         </div>
-      )}
-
-      {/* Settings Button */}
-      <div className="border-t border-gray-200 dark:border-gray-800 p-2">
-        <button
-          onClick={() => setShowSettings(s => !s)}
-          title="Settings"
-          className={`w-full flex items-center gap-3 px-2 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition ${
-            isOpen ? '' : 'justify-center'
-          } ${showSettings && isOpen ? 'bg-gray-100 dark:bg-gray-800' : ''}`}
-        >
-          <Settings size={18} className="flex-shrink-0" />
-          {isOpen && <span className="text-sm">Settings</span>}
-        </button>
-      </div>
-    </div>
+      </aside>
     </>
   )
 }
