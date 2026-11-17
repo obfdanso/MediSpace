@@ -14,7 +14,7 @@ export default function ServicesPage() {
         />
       </div>
       <Navbar />
-      <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
+      <div className="pt-32 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-6">
             Our Services
