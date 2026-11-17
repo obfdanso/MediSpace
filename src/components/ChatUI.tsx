@@ -418,6 +418,7 @@ export default function ChatUI({
                         // Typewriter animation: word by word, steady rate
                         <StreamingText
                           full={msg.content}
+                          streaming={!!msg.streaming}
                           onCaughtUp={() => { if (!msg.streaming) markAnimDone(msg.id); }}
                         />
                       ) : msg.streaming && !msg.content ? (
@@ -466,7 +467,7 @@ export default function ChatUI({
 
 const WORD_INTERVAL_MS = 38; // ~26 words/sec
 
-function StreamingText({ full, onCaughtUp }: { full: string; onCaughtUp: () => void }) {
+function StreamingText({ full, streaming, onCaughtUp }: { full: string; streaming: boolean; onCaughtUp: () => void }) {
   const [shown, setShown] = useState(0);
   const fullRef = useRef(full);
   const onCaughtUpRef = useRef(onCaughtUp);
@@ -474,11 +475,12 @@ function StreamingText({ full, onCaughtUp }: { full: string; onCaughtUp: () => v
   useEffect(() => { fullRef.current = full; });
   useEffect(() => { onCaughtUpRef.current = onCaughtUp; });
 
+  // Also re-checks when streaming ends, in case the text had already caught up
   useEffect(() => {
     if (shown >= fullRef.current.length) {
       onCaughtUpRef.current();
     }
-  }, [shown]);
+  }, [shown, streaming]);
 
   useEffect(() => {
     const id = setInterval(() => {
