@@ -19,10 +19,16 @@ export const db = supabaseUrl && supabaseKey
 
 export type Tier = 'anonymous' | 'free' | 'premium'
 
+// An empty or invalid setting falls back to the default instead of becoming 0
+const limitFromEnv = (name: string, fallback: number) => {
+  const n = Number.parseInt(env(name) ?? '', 10)
+  return Number.isFinite(n) && n > 0 ? n : fallback
+}
+
 const LIMITS: Record<Tier, number> = {
-  anonymous: Number(env('RATE_LIMIT_ANONYMOUS') ?? 3),
-  free: Number(env('RATE_LIMIT_FREE') ?? 20),
-  premium: Number(env('RATE_LIMIT_PREMIUM') ?? 100),
+  anonymous: limitFromEnv('RATE_LIMIT_ANONYMOUS', 3),
+  free: limitFromEnv('RATE_LIMIT_FREE', 20),
+  premium: limitFromEnv('RATE_LIMIT_PREMIUM', 100),
 }
 
 export const getLimit = (tier: Tier) => LIMITS[tier]
