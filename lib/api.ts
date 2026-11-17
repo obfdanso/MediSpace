@@ -74,8 +74,13 @@ export async function sendChatMessage(params: {
       const raw = line.slice(6).trim()
       if (raw === '[DONE]') continue
 
+      let event
       try {
-        const event = JSON.parse(raw)
+        event = JSON.parse(raw)
+      } catch {
+        continue // skip unparseable lines
+      }
+      {
         if (event.type === 'delta') {
           params.onChunk(event.content as string)
         } else if (event.type === 'done') {
@@ -88,8 +93,6 @@ export async function sendChatMessage(params: {
         } else if (event.type === 'error') {
           throw new Error(event.message ?? 'Stream error')
         }
-      } catch {
-        // skip unparseable lines
       }
     }
   }
