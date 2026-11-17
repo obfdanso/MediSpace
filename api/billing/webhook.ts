@@ -9,6 +9,7 @@ import { confirmPayment, validSignature } from '../_lib/paystack'
 export async function POST(req: Request): Promise<Response> {
   const raw = await req.text()
   if (!(await validSignature(raw, req.headers.get('x-paystack-signature')))) {
+    console.error('[paystack] webhook signature did not match')
     return json({ error: 'Invalid signature.' }, 401)
   }
 
@@ -21,6 +22,7 @@ export async function POST(req: Request): Promise<Response> {
 
   if (event.event === 'charge.success' && event.data?.reference) {
     const result = await confirmPayment(event.data.reference)
+    console.log('[paystack] webhook', event.data.reference, result.status)
     // A 500 makes Paystack retry later; only do that when retrying could help
     if (result.status === 'error') return json({ received: false }, 500)
   }

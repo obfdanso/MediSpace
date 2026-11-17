@@ -63,7 +63,11 @@ export async function confirmPayment(reference: string, expectedUserId?: string)
   if (!/^[A-Za-z0-9_\-.=]{6,100}$/.test(reference)) return { status: 'error', message: 'Invalid payment reference.' }
 
   const { ok, body } = await paystack(`/transaction/verify/${encodeURIComponent(reference)}`)
-  if (!ok || !body.data) return { status: 'error', message: 'Could not check the payment with Paystack.' }
+  if (!ok || !body.data) {
+    console.error('[paystack] verify failed', reference, body.message ?? 'no message')
+    return { status: 'error', message: 'Could not check the payment with Paystack.' }
+  }
+  console.log('[paystack] verify', reference, txSummary(body.data))
 
   const tx = body.data
   if (PENDING.has(tx.status)) return { status: 'pending', message: 'Your payment is still processing.' }
@@ -92,6 +96,10 @@ export async function confirmPayment(reference: string, expectedUserId?: string)
     return { status: 'error', message: 'Payment received, but Premium could not be activated yet. It will retry automatically.' }
   }
   return { status: 'credited', premiumUntil: data as string }
+}
+
+function txSummary(tx: { status?: string; amount?: number; currency?: string }) {
+  return `${tx.status} ${tx.amount} ${tx.currency}`
 }
 
 /** Checks the x-paystack-signature header (HMAC-SHA512 of the raw body). */
