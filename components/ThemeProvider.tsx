@@ -12,7 +12,17 @@ type ThemeContextType = {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('light')
+  // Read the saved theme up front so dark-mode users don't get a light flash
+  const [theme, setTheme] = useState<Theme>(() => {
+    let initial: Theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    try {
+      const saved = localStorage.getItem('theme')
+      if (saved === 'light' || saved === 'dark') initial = saved
+    } catch { /* storage unavailable */ }
+    // Applied here, not in an effect, so the first paint already has the class
+    document.documentElement.classList.add(initial)
+    return initial
+  })
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
