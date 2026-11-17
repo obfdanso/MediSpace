@@ -22,8 +22,8 @@ export default function FaqPage() {
           <div className="space-y-6">
             {[
               {
-                q: "Is MediCare AI a replacement for doctors?",
-                a: "No, MediCare AI is designed to provide information and guidance, but should not replace professional medical advice.",
+                q: "Is MediSpace AI a replacement for doctors?",
+                a: "No, MediSpace AI is designed to provide information and guidance, but should not replace professional medical advice.",
               },
               {
                 q: "How accurate is the AI?",

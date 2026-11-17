@@ -190,7 +190,7 @@ export default function OnboardingPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
           </div>
-          <span className="text-lg font-semibold text-gray-800 dark:text-gray-100 font-lobster">MediCare AI</span>
+          <span className="text-lg font-semibold text-gray-800 dark:text-gray-100 font-lobster">MediSpace AI</span>
         </div>
         {isEditMode ? (
           <button
@@ -579,7 +579,7 @@ export default function OnboardingPage() {
           {step === 3 && (
             <StepCard
               title="Primary Health Goal"
-              subtitle="What is your main reason for using MediCare AI? This helps us tailor your experience."
+              subtitle="What is your main reason for using MediSpace AI? This helps us tailor your experience."
             >
               <div className="space-y-3">
                 {[

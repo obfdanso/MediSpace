@@ -16,7 +16,7 @@ export default function Footer() {
                 </svg>
               </div>
               <span className="text-xl font-bold text-gray-800 dark:text-gray-100 font-lobster">
-                MediCare AI
+                MediSpace AI
               </span>
             </div>
             <p className="text-gray-600 dark:text-gray-400 text-sm">
@@ -81,7 +81,7 @@ export default function Footer() {
         <div className="pt-8 border-t border-gray-200 dark:border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-gray-600 dark:text-gray-400 text-sm">
-              © 2026 MediCare AI. All rights reserved.
+              © 2026 MediSpace AI. All rights reserved.
             </p>
             <div className="flex gap-6">
               {[{ label: 'Safety & Privacy', to: '/safety' }].map((item) => (

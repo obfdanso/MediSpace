@@ -95,7 +95,7 @@ export default function LandingPage() {
         </h2>
         <p className="text-lg text-center text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
           ChatGPT doesn't know your medical history. Google doesn't track your medications.
-          MediCare AI has everything in one place.
+          MediSpace AI has everything in one place.
         </p>
       </motion.section>
 
@@ -343,7 +343,7 @@ export default function LandingPage() {
       >
         <div className="text-center">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-8 leading-tight font-lobster">
-            Experience MediCare AI Today
+            Experience MediSpace AI Today
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-400 mb-12 max-w-2xl mx-auto">
             Your entire health journey, in one place.

@@ -17,11 +17,11 @@ export default function AboutPage() {
       <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-6">
-            About MediCare AI
+            About MediSpace AI
           </h1>
           <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm rounded-xl p-8 border border-gray-200 dark:border-gray-800">
             <p className="text-lg text-gray-700 dark:text-gray-200 mb-4">
-              MediCare AI is your trusted medical assistant powered by advanced
+              MediSpace AI is your trusted medical assistant powered by advanced
               artificial intelligence.
             </p>
             <p className="text-gray-600 dark:text-gray-300">
