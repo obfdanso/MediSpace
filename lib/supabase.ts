@@ -107,24 +107,6 @@ export async function getConversations(userId: string): Promise<Conversation[]> 
   return data
 }
 
-export async function createConversation(userId: string, title: string, topic?: string): Promise<Conversation | null> {
-  const { data, error } = await supabase
-    .from('conversations')
-    .insert({ user_id: userId, title, topic: topic ?? null })
-    .select()
-    .single()
-  if (error) return null
-  return data
-}
-
-export async function updateConversationTitle(id: string, title: string) {
-  const { error } = await supabase
-    .from('conversations')
-    .update({ title, updated_at: new Date().toISOString() })
-    .eq('id', id)
-  return { error }
-}
-
 export async function deleteConversation(id: string) {
   const { error } = await supabase
     .from('conversations')
@@ -140,20 +122,5 @@ export async function getMessages(conversationId: string): Promise<ConversationM
     .eq('conversation_id', conversationId)
     .order('created_at', { ascending: true })
   if (error) return []
-  return data
-}
-
-export async function saveMessage(conversationId: string, role: 'user' | 'assistant', content: string): Promise<ConversationMessage | null> {
-  const { data, error } = await supabase
-    .from('messages')
-    .insert({ conversation_id: conversationId, role, content })
-    .select()
-    .single()
-  // Update conversation updated_at
-  await supabase
-    .from('conversations')
-    .update({ updated_at: new Date().toISOString() })
-    .eq('id', conversationId)
-  if (error) return null
   return data
 }

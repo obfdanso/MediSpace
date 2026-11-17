@@ -6,7 +6,6 @@ import { useTheme } from "@/components/ThemeProvider";
 import { getHealthProfile, upsertHealthProfile } from "@/lib/supabase";
 import { getPlans, upgradeToPremium, downgradeToFree } from "@/lib/api";
 import type { Plan } from "@/lib/api";
-import type { HealthProfile } from "@/lib/supabase";
 
 type Tab = "plan" | "profile" | "preferences";
 

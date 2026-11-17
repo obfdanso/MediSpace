@@ -4,11 +4,9 @@ import { motion } from "framer-motion";
 import type { Variants } from "framer-motion";
 import {
   AlertTriangle,
-  BookOpenText,
   ClipboardList,
   FileSearch,
   FlaskConical,
-  MessageCircle,
   ShieldCheck,
   GraduationCap,
   Pill,

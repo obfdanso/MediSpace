@@ -4,7 +4,7 @@
  */
 import { supabase } from '@/lib/supabase'
 
-export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:3001'
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:3001'
 
 async function authHeaders(extra: Record<string, string> = {}): Promise<Record<string, string>> {
   const { data: { session } } = await supabase.auth.getSession()
@@ -119,25 +119,11 @@ export interface Plan {
   unavailable: string[]
 }
 
-export interface Subscription {
-  tier: 'free' | 'premium'
-  plan: Plan
-  status: string
-  currentPeriodEnd: string
-}
-
 export async function getPlans(): Promise<Plan[]> {
   const res = await fetch(`${BACKEND_URL}/api/billing/plans`)
   if (!res.ok) throw new Error('Failed to fetch plans')
   const data = await res.json()
   return data.plans
-}
-
-export async function getSubscription(): Promise<Subscription> {
-  const headers = await authHeaders()
-  const res = await fetch(`${BACKEND_URL}/api/billing/subscription`, { headers })
-  if (!res.ok) throw new Error('Failed to fetch subscription')
-  return res.json()
 }
 
 export async function upgradeToPremium(): Promise<{ tier: 'premium'; message: string }> {
@@ -154,21 +140,4 @@ export async function downgradeToFree(): Promise<{ tier: 'free'; message: string
   const body = await res.json()
   if (!res.ok) throw new Error(body.error ?? 'Downgrade failed')
   return body
-}
-
-// ─── Usage ────────────────────────────────────────────────────────────────────
-
-export interface UsageStatus {
-  tier: 'anonymous' | 'free' | 'premium'
-  usageToday: number
-  usageLimit: number
-  usageLeft: number
-  resetAt: string
-}
-
-export async function getUsageStatus(): Promise<UsageStatus> {
-  const headers = await authHeaders()
-  const res = await fetch(`${BACKEND_URL}/api/usage`, { headers })
-  if (!res.ok) throw new Error('Failed to fetch usage')
-  return res.json()
 }

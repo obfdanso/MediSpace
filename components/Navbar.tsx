@@ -1,5 +1,3 @@
-'use client'
-
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTheme } from './ThemeProvider'
 import { useAuth } from './AuthContext'
