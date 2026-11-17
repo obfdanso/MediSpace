@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Search, Trash2, PanelLeftClose, PanelLeftOpen, CreditCard, Zap, LogOut, Home, Sun, Moon, MessageSquare, ChevronsUpDown, LogIn } from 'lucide-react'
+import { Plus, Search, Trash2, CreditCard, Zap, LogOut, Home, Sun, Moon, ChevronsUpDown, LogIn } from 'lucide-react'
 import { useAuth } from './AuthContext'
 import { useTheme } from './ThemeProvider'
 import { getConversations, deleteConversation, type Conversation } from '@/lib/supabase'
@@ -10,6 +10,25 @@ interface ChatSidebarProps {
   onSelectConversation: (id: string) => void
   onNewChat: () => void
   refreshKey?: number
+}
+
+// Plain panel outline used for both opening and closing, like Claude's desktop app
+function SidebarIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="16" rx="3" />
+      <path d="M9.5 4v16" />
+    </svg>
+  )
+}
+
+// Rounded speech bubble with a curled tail, in the style of iMessage
+function ChatBubbleIcon({ size = 20, className = '' }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinejoin="round" className={className} aria-hidden="true">
+      <path d="M12 3.5c-5.25 0-9.5 3.47-9.5 7.75 0 2.33 1.26 4.42 3.25 5.84-.18 1.3-.83 2.5-1.86 3.4 1.98.02 3.8-.66 5.1-1.8.95.2 1.95.31 3.01.31 5.25 0 9.5-3.47 9.5-7.75S17.25 3.5 12 3.5z" />
+    </svg>
+  )
 }
 
 const GROUPS = ['Today', 'Yesterday', 'Previous 7 days', 'Older'] as const
@@ -134,7 +153,7 @@ export default function ChatSidebar({
           title="Open sidebar"
           className="fixed top-2.5 left-3 z-40 p-2 rounded-lg text-stone-600 dark:text-stone-300 hover:bg-stone-200/70 dark:hover:bg-stone-800 transition"
         >
-          <PanelLeftOpen size={20} />
+          <SidebarIcon size={20} />
         </button>
       )}
 
@@ -157,7 +176,7 @@ export default function ChatSidebar({
             title={isOpen ? 'Close sidebar' : 'Open sidebar'}
             className={iconBtn}
           >
-            {isOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
+            <SidebarIcon size={20} />
           </button>
         </div>
 
@@ -195,7 +214,7 @@ export default function ChatSidebar({
         <nav className="flex-1 overflow-y-auto px-2 py-3">
           {!isOpen ? null : !isLoggedIn ? (
             <div className="mx-1 mt-2 rounded-xl border border-stone-200 dark:border-stone-800 bg-white/60 dark:bg-stone-900/60 p-4 text-center">
-              <MessageSquare size={20} className="mx-auto mb-2 text-stone-400" />
+              <ChatBubbleIcon size={24} className="mx-auto mb-2 text-stone-400" />
               <p className="text-xs text-stone-500 dark:text-stone-400 mb-3 leading-relaxed">
                 Sign in to save and revisit your chats
               </p>
