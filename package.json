@@ -14,17 +14,13 @@
     "@fontsource/lobster-two": "^5.2.8",
     "@fontsource/pt-serif": "^5.2.8",
     "@supabase/supabase-js": "^2.100.1",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
     "framer-motion": "^12.38.0",
     "lucide-react": "^0.575.0",
-    "radix-ui": "^1.4.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-markdown": "^10.1.0",
     "react-router-dom": "^7.13.1",
-    "remark-gfm": "^4.0.1",
-    "tailwind-merge": "^3.5.0"
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
