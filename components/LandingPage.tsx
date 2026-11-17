@@ -11,7 +11,7 @@ import {
   GraduationCap,
   Pill,
   ShieldAlert,
-  Bot,
+  Sparkles,
 } from "lucide-react";
 import Footer from './Footer'
 
@@ -121,7 +121,7 @@ export default function LandingPage() {
             { title: 'Drug Information Lookup', desc: 'Uses, dosage, side effects, warnings — in one place.', Icon: FileSearch },
             { title: 'Symptom Analysis', desc: 'Understand symptoms and when to seek medical help.', Icon: ClipboardList },
             { title: 'Emergency Guidance', desc: 'Quick steps for overdose or severe reactions.', Icon: AlertTriangle },
-            { title: 'AI Consultation', desc: "Ask questions in plain language, anytime you're unsure.", Icon: Bot }
+            { title: 'AI Consultation', desc: "Ask questions in plain language, anytime you're unsure.", Icon: Sparkles }
           ].map((feature, i) => (
             <motion.div
               key={feature.title}
@@ -299,7 +299,7 @@ export default function LandingPage() {
             { title: 'Students', desc: 'Quickly access drug information for common illnesses on campus.', Icon: GraduationCap },
             { title: 'Self-Medication Support', desc: 'Get guidance on what medications to take for minor health issues.', Icon: Pill },
             { title: 'Safe Drug Usage', desc: 'Avoid harmful drug combinations and incorrect dosage.', Icon: ShieldAlert },
-            { title: 'AI Assistance', desc: 'Ask health-related questions and get instant AI-powered responses.', Icon: Bot }
+            { title: 'AI Assistance', desc: 'Ask health-related questions and get instant AI-powered responses.', Icon: Sparkles }
           ].map((item, i) => (
             <motion.div
               key={item.title}
