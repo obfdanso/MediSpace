@@ -74,23 +74,42 @@ export default function ChatUI({
 
   // Load conversation when conversationId prop changes, or reset for new chat
   useEffect(() => {
-    if (!isLoggedIn || !user) return;
+    if (!isLoggedIn || !user) {
+      // Signed out: don't leave a saved conversation on screen
+      if (activeConversationId) {
+        setMessages([{ id: "1", role: "ai", content: initialGreeting }]);
+        setActiveConversationId(null);
+      }
+      return;
+    }
 
     if (conversationId) {
+      // Already on screen (just created by the reply we streamed)
+      if (conversationId === activeConversationId) return;
+
+      let cancelled = false;
       const load = async () => {
         const msgs = await getMessages(conversationId);
-        if (msgs.length > 0) {
-          setMessages(
-            msgs.map((m) => ({
-              id: m.id,
-              role: m.role === "assistant" ? "ai" : "user",
-              content: m.content,
-            }))
-          );
-        }
+        if (cancelled) return;
+        // Saved replies render straight away instead of being typed out again
+        setAnimDone((prev) => {
+          const next = new Set(prev);
+          msgs.forEach((m) => next.add(m.id));
+          return next;
+        });
+        setMessages(
+          msgs.length > 0
+            ? msgs.map((m) => ({
+                id: m.id,
+                role: m.role === "assistant" ? "ai" : "user",
+                content: m.content,
+              }))
+            : [{ id: "1", role: "ai", content: initialGreeting }]
+        );
         setActiveConversationId(conversationId);
       };
       load();
+      return () => { cancelled = true; };
     } else {
       setMessages([{ id: "1", role: "ai", content: initialGreeting }]);
       setActiveConversationId(null);
