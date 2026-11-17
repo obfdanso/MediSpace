@@ -8,6 +8,7 @@
  */
 import { db, env, json, getCaller, getLimit, reserveMessage, refundMessage } from './_lib/server'
 import { buildSystemPrompt, type HealthProfile } from './_lib/prompt'
+import { writeTitle } from './_lib/title'
 
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions'
 const MAX_MESSAGE_LENGTH = 4000
@@ -139,8 +140,10 @@ export async function POST(req: Request): Promise<Response> {
   }
 
   // The model accepted the request: now it counts and gets saved
+  const isNewConversation = !!(db && caller.userId && !conversationId)
   if (db && caller.userId && !conversationId) {
-    const title = (topic ? `${topic}: ` : '') + (message.length > 60 ? `${message.slice(0, 57)}...` : message)
+    // Placeholder until the AI-written title replaces it after the reply
+    const title = message.length > 60 ? `${message.slice(0, 57)}...` : message
     const { data: conv } = await db
       .from('conversations').insert({ user_id: caller.userId, title, topic }).select('id').single()
     conversationId = conv?.id ?? null
@@ -194,9 +197,14 @@ export async function POST(req: Request): Promise<Response> {
         }
 
         if (db && conversationId && reply) {
+          // A new chat gets a short AI-written title, saved before "done" so
+          // the sidebar shows it as soon as it refreshes
+          const title = isNewConversation ? await writeTitle(apiKey, message, reply, fallbackModel ?? env('GROQ_MODEL') ?? DEFAULT_MODEL) : null
           await Promise.all([
             db.from('messages').insert({ conversation_id: conversationId, role: 'assistant', content: reply }),
-            db.from('conversations').update({ updated_at: new Date().toISOString() }).eq('id', conversationId),
+            db.from('conversations')
+              .update({ updated_at: new Date().toISOString(), ...(title ? { title } : {}) })
+              .eq('id', conversationId),
           ])
         }
 
@@ -258,3 +266,4 @@ async function pickAvailableModel(apiKey: string): Promise<string | null> {
   }
   return ids[0] ?? null
 }
+
