@@ -77,7 +77,7 @@ export default function LandingPage() {
             custom={3}
             className="text-sm text-gray-500 dark:text-gray-500"
           >
-            We are HIPAA compliant and available 24/7
+            Private, secure and available 24/7
           </motion.p>
         </div>
       </section>
@@ -191,7 +191,7 @@ export default function LandingPage() {
             <div className="space-y-4">
               {[
                 { title: 'Intelligent Storage', desc: 'All records are auto-tagged and categorized' },
-                { title: 'Secure & Private', desc: 'Enterprise-grade encryption and HIPAA compliant' },
+                { title: 'Secure & Private', desc: 'Encrypted and visible only to you' },
                 { title: 'Easy Sharing', desc: 'Share with healthcare providers instantly' },
               ].map((item, i) => (
                 <motion.div
@@ -352,7 +352,7 @@ export default function LandingPage() {
             Try AI Chat
           </Link>
           <p className="text-sm text-gray-500 dark:text-gray-500 mt-6">
-            We are HIPAA compliant and available 24/7
+            Private, secure and available 24/7
           </p>
         </div>
       </motion.section>

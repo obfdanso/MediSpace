@@ -171,7 +171,7 @@ export default function AuthPage() {
 
           <div className="space-y-3">
             {[
-              { icon: ShieldCheck, text: 'HIPAA Compliant and Secure' },
+              { icon: ShieldCheck, text: 'Private and Secure' },
               { icon: Bot, text: 'AI-Powered Medical Insights' },
               { icon: FlaskConical, text: 'Drug Interaction Checker' },
               { icon: ClipboardList, text: 'Symptom Analysis' },
@@ -469,7 +469,7 @@ export default function AuthPage() {
               <div className="mt-6 pt-5 border-t border-gray-100 dark:border-gray-800 flex items-center justify-center gap-5">
                 <div className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                  HIPAA Compliant
+                  Private by Design
                 </div>
                 <div className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
                   <Lock className="w-3.5 h-3.5 text-emerald-500" />

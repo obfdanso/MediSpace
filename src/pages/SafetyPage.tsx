@@ -26,7 +26,6 @@ export default function SafetyPage() {
             </p>
             <ul className="list-disc list-inside space-y-2 text-gray-600 dark:text-gray-300">
               <li>End-to-end encryption</li>
-              <li>HIPAA compliant</li>
               <li>No data sharing with third parties</li>
               <li>Regular security audits</li>
             </ul>

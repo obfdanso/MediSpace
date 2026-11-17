@@ -31,7 +31,7 @@ export default function FaqPage() {
               },
               {
                 q: "Is my data secure?",
-                a: "Yes, we use enterprise-grade encryption and are HIPAA compliant to ensure your data is protected.",
+                a: "Yes, your data is encrypted and only you can see your health profile and chats.",
               },
             ].map((faq, i) => (
               <div
