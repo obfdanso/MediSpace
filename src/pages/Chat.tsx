@@ -1,25 +1,21 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/components/AuthContext";
 import ChatUI from "../components/ChatUI";
 import ChatSidebar from "../../components/Sidebar";
 
-const FREE_MESSAGE_LIMIT = 3;
-
 export default function Chat() {
-  const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
   const [messageCount, setMessageCount] = useState(0);
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [sidebarRefreshKey, setSidebarRefreshKey] = useState(0);
 
-  const handleNewMessage = () => {
-    const newCount = messageCount + 1;
-    setMessageCount(newCount);
-    if (newCount >= FREE_MESSAGE_LIMIT && !isLoggedIn) {
-      setTimeout(() => navigate("/auth"), 2000);
-    }
-  };
+  // Once the free messages run out ChatUI locks the input and offers sign in,
+  // so the last reply stays readable instead of being cut off by a redirect.
+  const handleNewMessage = () => setMessageCount(c => c + 1);
+
+  useEffect(() => {
+    if (!isLoggedIn) setSelectedConversationId(null);
+  }, [isLoggedIn]);
 
   const handleConversationCreated = (id: string) => {
     setSelectedConversationId(id);
