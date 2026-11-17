@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Send, User, Bot, Loader2 } from "lucide-react";
+import { ArrowUp, Loader2, Copy, Check, X, Lock, AlertTriangle } from "lucide-react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/components/AuthContext";
 import { getMessages } from "@/lib/supabase";
@@ -24,6 +24,48 @@ interface ChatUIProps {
 // Anonymous free limit (client-side UI only — backend enforces actual limit)
 const ANON_LIMIT = 3;
 
+const SUGGESTIONS = [
+  "What could be causing my headaches?",
+  "How much water should I drink a day?",
+  "Tips for better sleep",
+  "Explain my blood pressure reading",
+];
+
+function timeGreeting() {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 12) return "Good morning";
+  if (hour >= 12 && hour < 17) return "Good afternoon";
+  return "Good evening";
+}
+
+const markdownComponents = {
+  p: ({ children }: { children?: React.ReactNode }) => <p className="mb-4 last:mb-0">{children}</p>,
+  ul: ({ children }: { children?: React.ReactNode }) => <ul className="list-disc pl-6 mb-4 space-y-1.5">{children}</ul>,
+  ol: ({ children }: { children?: React.ReactNode }) => <ol className="list-decimal pl-6 mb-4 space-y-1.5">{children}</ol>,
+  li: ({ children }: { children?: React.ReactNode }) => <li className="pl-1">{children}</li>,
+  strong: ({ children }: { children?: React.ReactNode }) => <strong className="font-semibold">{children}</strong>,
+  h1: ({ children }: { children?: React.ReactNode }) => <h1 className="text-xl font-semibold mb-3 mt-6 first:mt-0">{children}</h1>,
+  h2: ({ children }: { children?: React.ReactNode }) => <h2 className="text-lg font-semibold mb-2 mt-5 first:mt-0">{children}</h2>,
+  h3: ({ children }: { children?: React.ReactNode }) => <h3 className="font-semibold mb-2 mt-4 first:mt-0">{children}</h3>,
+  a: ({ children, href }: { children?: React.ReactNode; href?: string }) => (
+    <a href={href} target="_blank" rel="noreferrer" className="text-emerald-700 dark:text-emerald-400 underline underline-offset-2">{children}</a>
+  ),
+  code: ({ children, className }: { children?: React.ReactNode; className?: string }) =>
+    className ? (
+      <code className="block bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-lg p-3 text-[13px] overflow-x-auto my-3 font-mono">{children}</code>
+    ) : (
+      <code className="bg-stone-100 dark:bg-stone-800 rounded px-1.5 py-0.5 text-[0.9em] font-mono">{children}</code>
+    ),
+  blockquote: ({ children }: { children?: React.ReactNode }) => (
+    <blockquote className="border-l-2 border-emerald-500 pl-4 text-stone-600 dark:text-stone-400 my-3">{children}</blockquote>
+  ),
+  table: ({ children }: { children?: React.ReactNode }) => (
+    <div className="overflow-x-auto my-4"><table className="w-full text-sm border-collapse">{children}</table></div>
+  ),
+  th: ({ children }: { children?: React.ReactNode }) => <th className="border-b border-stone-300 dark:border-stone-700 px-3 py-2 text-left font-semibold">{children}</th>,
+  td: ({ children }: { children?: React.ReactNode }) => <td className="border-b border-stone-200 dark:border-stone-800 px-3 py-2">{children}</td>,
+};
+
 export default function ChatUI({
   onNewMessage,
   messageCount = 0,
@@ -32,52 +74,45 @@ export default function ChatUI({
 }: ChatUIProps) {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { isLoggedIn, user } = useAuth();
+  const { isLoggedIn, user, profile } = useAuth();
   const topic = searchParams.get("topic");
 
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour >= 5 && hour < 12) return "this morning";
-    if (hour >= 12 && hour < 17) return "this afternoon";
-    if (hour >= 17 && hour < 21) return "this evening";
-    return "tonight";
-  };
-
-  const initialGreeting = topic
-    ? `Hello! I see you are interested in ${topic}. How can I help you with that ${getGreeting()}?`
-    : `Hello! How can I help you ${getGreeting()}?`;
-
-  const [messages, setMessages] = useState<Message[]>([
-    { id: "1", role: "ai", content: initialGreeting },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [usageLeft, setUsageLeft] = useState<number | null>(null);
   const [errorBanner, setErrorBanner] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   // Tracks which AI message IDs have finished their typewriter animation
   const [animDone, setAnimDone] = useState<Set<string>>(new Set());
   const markAnimDone = useCallback((id: string) => {
     setAnimDone(prev => new Set(prev).add(id));
   }, []);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const remainingMessages = ANON_LIMIT - messageCount;
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  const firstName = profile?.full_name?.trim().split(/\s+/)[0];
 
   useEffect(() => {
-    scrollToBottom();
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Grow the composer with its content, up to a cap
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 220)}px`;
+  }, [input]);
 
   // Load conversation when conversationId prop changes, or reset for new chat
   useEffect(() => {
     if (!isLoggedIn || !user) {
       // Signed out: don't leave a saved conversation on screen
       if (activeConversationId) {
-        setMessages([{ id: "1", role: "ai", content: initialGreeting }]);
+        setMessages([]);
         setActiveConversationId(null);
       }
       return;
@@ -98,50 +133,43 @@ export default function ChatUI({
           return next;
         });
         setMessages(
-          msgs.length > 0
-            ? msgs.map((m) => ({
-                id: m.id,
-                role: m.role === "assistant" ? "ai" : "user",
-                content: m.content,
-              }))
-            : [{ id: "1", role: "ai", content: initialGreeting }]
+          msgs.map((m) => ({
+            id: m.id,
+            role: m.role === "assistant" ? "ai" : "user",
+            content: m.content,
+          }))
         );
         setActiveConversationId(conversationId);
       };
       load();
       return () => { cancelled = true; };
     } else {
-      setMessages([{ id: "1", role: "ai", content: initialGreeting }]);
+      setMessages([]);
       setActiveConversationId(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationId, isLoggedIn, user?.id]);
 
-  const handleSend = async () => {
-    if (!input.trim() || isStreaming) return;
+  const handleSend = async (text?: string) => {
+    const userContent = (text ?? input).trim();
+    if (!userContent || isStreaming) return;
 
     if (!isLoggedIn && messageCount >= ANON_LIMIT) {
       navigate("/auth");
       return;
     }
 
-    const userContent = input.trim();
     const userMsgId = Date.now().toString();
     const aiMsgId = (Date.now() + 1).toString();
 
-    // Optimistically add user message
+    // Optimistically add the user message and an empty reply placeholder
     setMessages((prev) => [
       ...prev,
       { id: userMsgId, role: "user", content: userContent },
+      { id: aiMsgId, role: "ai", content: "", streaming: true },
     ]);
     setInput("");
     setErrorBanner(null);
-
-    // Add empty streaming AI message placeholder
-    setMessages((prev) => [
-      ...prev,
-      { id: aiMsgId, role: "ai", content: "", streaming: true },
-    ]);
     setIsStreaming(true);
 
     try {
@@ -171,7 +199,6 @@ export default function ChatUI({
         if (onConversationCreated) onConversationCreated(result.conversationId);
       }
 
-      // Update usage display
       setUsageLeft(result.usageLeft);
 
       // Only answered messages count against the free allowance
@@ -181,8 +208,7 @@ export default function ChatUI({
       setMessages((prev) => prev.filter((m) => m.id !== aiMsgId));
 
       const error = err as { message?: string; status?: number }
-      const message = error.message ?? "Something went wrong. Please try again.";
-      setErrorBanner(message);
+      setErrorBanner(error.message ?? "Something went wrong. Please try again.");
 
       // Rate limited — redirect to auth for anonymous users
       if (error.status === 429 && !isLoggedIn) {
@@ -190,253 +216,231 @@ export default function ChatUI({
       }
     } finally {
       setIsStreaming(false);
+      textareaRef.current?.focus();
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) handleSend();
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  const handleCopy = async (msg: Message) => {
+    try {
+      await navigator.clipboard.writeText(msg.content);
+      setCopiedId(msg.id);
+      setTimeout(() => setCopiedId(c => (c === msg.id ? null : c)), 1500);
+    } catch { /* clipboard unavailable */ }
   };
 
   const isLocked = !isLoggedIn && messageCount >= ANON_LIMIT;
+  const isEmpty = messages.length === 0;
 
-  return (
-    <div className="flex flex-col w-full h-full bg-transparent overflow-hidden">
-
-      {/* Chat Header */}
-      <div className="relative z-10 bg-white/50 dark:bg-gray-900/50 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 pl-14 md:pl-6 pr-4 md:pr-6 py-4 flex flex-wrap items-center justify-between shrink-0 gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-emerald-600/20 flex items-center justify-center text-emerald-600 dark:text-emerald-500">
-            <Bot size={24} />
-          </div>
-          <div>
-            <h2 className="text-gray-900 dark:text-white font-semibold text-lg font-pt-serif">
-              MediSpace AI Assistant
-            </h2>
-            <p className="text-gray-500 dark:text-gray-400 text-sm">Always here to help</p>
-          </div>
-        </div>
-
-        {/* Usage badge */}
-        {!isLoggedIn && (
-          <div className="flex items-center gap-2">
-            <div
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border ${
-                remainingMessages <= 1
-                  ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-600 dark:text-red-400"
-                  : "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400"
-              }`}
-            >
-              <div
-                className={`w-1.5 h-1.5 rounded-full ${
-                  remainingMessages <= 1 ? "bg-red-500" : "bg-emerald-500"
-                }`}
-              />
-              {remainingMessages > 0
-                ? `${remainingMessages} free message${remainingMessages !== 1 ? "s" : ""} left`
-                : "Free limit reached"}
-            </div>
-            <button
-              onClick={() => navigate("/auth")}
-              className="text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-full transition"
-            >
-              Sign In
-            </button>
-          </div>
-        )}
-
-        {/* Logged-in usage badge */}
-        {isLoggedIn && usageLeft !== null && (
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            {usageLeft} messages left today
-          </div>
-        )}
-      </div>
-
-      {/* Context Badge */}
-      {topic && (
-        <div className="bg-emerald-50/80 dark:bg-emerald-950/40 backdrop-blur-md border-b border-emerald-100 dark:border-emerald-900/50 px-6 py-2.5 flex items-center justify-center shrink-0 shadow-sm z-0">
-          <div className="flex items-center gap-2.5 text-emerald-700 dark:text-emerald-400 text-sm font-medium tracking-wide">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-            </span>
-            Active Context: {topic}
-          </div>
+  const composer = (
+    <div className="w-full">
+      {/* Notices sit right above the composer instead of as full-width bars */}
+      {errorBanner && (
+        <div className="mb-2 flex items-start gap-2 rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 px-3.5 py-2.5 text-sm text-red-700 dark:text-red-300">
+          <AlertTriangle size={16} className="mt-0.5 flex-shrink-0" />
+          <p className="flex-1">{errorBanner}</p>
+          <button onClick={() => setErrorBanner(null)} aria-label="Dismiss" className="opacity-60 hover:opacity-100">
+            <X size={16} />
+          </button>
         </div>
       )}
 
-      {/* Warning banner */}
-      {!isLoggedIn && remainingMessages === 1 && (
-        <div className="bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800 px-4 md:px-6 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between shrink-0 gap-3 sm:gap-0">
-          <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 text-sm font-medium">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Last free message. Sign in to keep chatting.
-          </div>
+      {isLocked ? (
+        <div className="mb-2 flex flex-col sm:flex-row items-center justify-between gap-3 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-100 dark:bg-stone-800/60 px-4 py-3 text-sm text-stone-600 dark:text-stone-300">
+          <span className="flex items-center gap-2">
+            <Lock size={15} className="text-emerald-600 dark:text-emerald-400" />
+            You've used your {ANON_LIMIT} free messages
+          </span>
           <button
             onClick={() => navigate("/auth")}
-            className="text-xs font-bold text-white bg-amber-500 hover:bg-amber-600 px-3 py-1.5 rounded-full transition"
+            className="text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 px-4 py-1.5 rounded-full transition"
           >
-            Sign In Free
+            Sign in to continue
           </button>
         </div>
-      )}
-
-      {/* Error banner */}
-      {errorBanner && (
-        <div className="bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800 px-6 py-3 flex items-center justify-between shrink-0">
-          <p className="text-sm text-red-600 dark:text-red-400">{errorBanner}</p>
-          <button
-            onClick={() => setErrorBanner(null)}
-            className="text-red-400 hover:text-red-600 text-lg leading-none"
-          >
-            ×
+      ) : !isLoggedIn && remainingMessages === 1 ? (
+        <div className="mb-2 flex items-center justify-between gap-3 rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/30 px-4 py-2.5 text-sm text-amber-800 dark:text-amber-300">
+          <span>Last free message. Sign in to keep chatting.</span>
+          <button onClick={() => navigate("/auth")} className="font-semibold hover:underline whitespace-nowrap">
+            Sign in
           </button>
         </div>
-      )}
+      ) : null}
 
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 space-y-6">
-        <div className="max-w-5xl mx-auto space-y-6 w-full">
-          {messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`flex gap-4 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"} transition-all duration-300 ease-in-out`}
-            >
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                  msg.role === "user"
-                    ? "bg-emerald-600 text-white"
-                    : "bg-gray-100 dark:bg-gray-800 text-emerald-600 dark:text-emerald-400"
-                }`}
-              >
-                {msg.role === "user" ? <User size={20} /> : <Bot size={20} />}
-              </div>
-
-              <div
-                className={`max-w-[85%] md:max-w-[75%] px-5 py-3.5 text-sm md:text-base leading-relaxed ${
-                  msg.role === "user"
-                    ? "bg-emerald-600 text-white rounded-2xl rounded-tr-sm"
-                    : "bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-2xl rounded-tl-sm"
-                }`}
-              >
-                {msg.role === "user" ? (
-                  msg.content
-                ) : (msg.streaming || !animDone.has(msg.id)) && msg.content ? (
-                  // Typewriter animation: word by word, steady rate
-                  <StreamingText
-                    full={msg.content}
-                    onCaughtUp={() => { if (!msg.streaming) markAnimDone(msg.id); }}
-                  />
-                ) : msg.streaming && !msg.content ? (
-                  <span className="flex items-center gap-1.5 text-gray-400 dark:text-gray-500">
-                    <Loader2 size={14} className="animate-spin" />
-                    Thinking...
-                  </span>
-                ) : msg.content ? (
-                  // Animation done: render full markdown
-                  <ReactMarkdown
-                    remarkPlugins={[remarkGfm]}
-                    components={{
-                      p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                      ul: ({ children }) => <ul className="list-disc list-inside mb-2 space-y-1">{children}</ul>,
-                      ol: ({ children }) => <ol className="list-decimal list-inside mb-2 space-y-1">{children}</ol>,
-                      li: ({ children }) => <li className="ml-2">{children}</li>,
-                      strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
-                      h1: ({ children }) => <h1 className="text-lg font-bold mb-2 mt-3 first:mt-0">{children}</h1>,
-                      h2: ({ children }) => <h2 className="text-base font-bold mb-2 mt-3 first:mt-0">{children}</h2>,
-                      h3: ({ children }) => <h3 className="text-sm font-bold mb-1 mt-2 first:mt-0">{children}</h3>,
-                      code: ({ children, className }) =>
-                        className ? (
-                          <code className="block bg-gray-200 dark:bg-gray-800 rounded p-2 text-xs overflow-x-auto my-2">{children}</code>
-                        ) : (
-                          <code className="bg-gray-200 dark:bg-gray-800 rounded px-1 py-0.5 text-xs">{children}</code>
-                        ),
-                      blockquote: ({ children }) => (
-                        <blockquote className="border-l-4 border-emerald-400 pl-3 italic text-gray-600 dark:text-gray-400 my-2">{children}</blockquote>
-                      ),
-                    }}
-                  >
-                    {msg.content}
-                  </ReactMarkdown>
-                ) : null}
-              </div>
-            </div>
-          ))}
-          <div ref={messagesEndRef} />
-        </div>
-      </div>
-
-      {/* Input Area */}
-      <div className="p-4 bg-white/50 dark:bg-gray-950/50 backdrop-blur-md border-t border-gray-200 dark:border-gray-800 shrink-0 mb-4 pb-8 md:pb-4">
-
-        {/* Locked overlay */}
-        {isLocked && (
-          <div className="max-w-4xl mx-auto mb-3 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-4 md:px-5 py-3 text-center sm:text-left">
-            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 text-sm">
-              <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-              You have used your {ANON_LIMIT} free messages
-            </div>
-            <button
-              onClick={() => navigate("/auth")}
-              className="text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 px-4 py-1.5 rounded-full transition"
-            >
-              Sign in to continue
-            </button>
+      <div
+        className={`rounded-2xl border bg-white dark:bg-stone-800 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.08)] dark:shadow-none transition ${
+          isLocked
+            ? "border-stone-200 dark:border-stone-700 opacity-50 pointer-events-none"
+            : "border-stone-200 dark:border-stone-700 focus-within:border-stone-300 dark:focus-within:border-stone-600 focus-within:shadow-[0_4px_20px_-6px_rgba(0,0,0,0.12)]"
+        }`}
+      >
+        <textarea
+          ref={textareaRef}
+          rows={1}
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          autoFocus
+          placeholder={isLocked ? "Sign in to continue chatting..." : isEmpty ? "How can I help you today?" : "Reply to MediSpace..."}
+          disabled={isLocked}
+          className="block w-full resize-none bg-transparent px-4 pt-4 pb-2 text-[15px] leading-relaxed text-stone-900 dark:text-stone-100 outline-none placeholder:text-stone-400 dark:placeholder:text-stone-500 disabled:cursor-not-allowed"
+        />
+        <div className="flex items-center justify-between gap-2 px-3 pb-3">
+          <div className="flex items-center gap-2 min-w-0">
+            {topic && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200/70 dark:border-emerald-900 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-400 truncate">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+                {topic}
+              </span>
+            )}
           </div>
-        )}
-
-        <div
-          className={`max-w-4xl mx-auto flex items-center gap-3 bg-gray-50 dark:bg-gray-900 border rounded-2xl px-4 py-3 transition-all shadow-sm ${
-            isLocked
-              ? "border-gray-200 dark:border-gray-700 opacity-50 pointer-events-none"
-              : "border-gray-300 dark:border-gray-700 focus-within:border-emerald-500/50 focus-within:ring-1 focus-within:ring-emerald-500/50"
-          }`}
-        >
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={
-              isLocked
-                ? "Sign in to continue chatting..."
-                : "Type your health-related question..."
-            }
-            disabled={isLocked || isStreaming}
-            className="flex-1 bg-transparent text-gray-900 dark:text-white px-2 py-1 outline-none placeholder:text-gray-400 dark:placeholder:text-gray-500 disabled:cursor-not-allowed"
-          />
-
           <button
-            onClick={handleSend}
+            onClick={() => handleSend()}
             disabled={!input.trim() || isLocked || isStreaming}
-            className="bg-emerald-600 hover:bg-emerald-500 text-white p-3 rounded-xl transition-colors flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
+            className="h-8 w-8 flex items-center justify-center rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition disabled:bg-stone-200 disabled:text-stone-400 dark:disabled:bg-stone-700 dark:disabled:text-stone-500 disabled:cursor-not-allowed flex-shrink-0"
             aria-label="Send message"
           >
-            {isStreaming ? (
-              <Loader2 size={20} className="animate-spin" />
-            ) : (
-              <Send size={20} strokeWidth={2.5} />
-            )}
+            {isStreaming ? <Loader2 size={16} className="animate-spin" /> : <ArrowUp size={18} strokeWidth={2.5} />}
           </button>
         </div>
-
-        {!isLoggedIn && (
-          <p className="text-center text-xs text-gray-400 dark:text-gray-600 mt-2">
-            <button
-              onClick={() => navigate("/auth")}
-              className="text-emerald-500 hover:underline font-medium"
-            >
-              Sign in
-            </button>
-            {" "}to save your chat history
-          </p>
-        )}
       </div>
+
+      <p className="mt-2 text-center text-[11px] text-stone-400 dark:text-stone-500">
+        MediSpace AI can make mistakes and is not a substitute for professional medical advice.
+        {!isLoggedIn && (
+          <>
+            {" "}
+            <button onClick={() => navigate("/auth")} className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium">
+              Sign in
+            </button>{" "}
+            to save your chats.
+          </>
+        )}
+      </p>
+    </div>
+  );
+
+  return (
+    <div className="flex flex-col w-full h-full overflow-hidden">
+      {/* Slim top bar */}
+      <div className="flex items-center justify-between gap-3 pl-14 md:pl-5 pr-4 h-14 shrink-0">
+        <span className="text-sm font-medium text-stone-500 dark:text-stone-400 truncate">
+          {isEmpty ? "" : "MediSpace AI"}
+        </span>
+        <div className="flex items-center gap-2">
+          {!isLoggedIn ? (
+            <>
+              <span
+                className={`hidden sm:inline text-xs font-medium ${
+                  remainingMessages <= 1 ? "text-red-600 dark:text-red-400" : "text-stone-500 dark:text-stone-400"
+                }`}
+              >
+                {remainingMessages > 0
+                  ? `${remainingMessages} free message${remainingMessages !== 1 ? "s" : ""} left`
+                  : "Free limit reached"}
+              </span>
+              <button
+                onClick={() => navigate("/auth")}
+                className="text-xs font-semibold text-white bg-stone-900 hover:bg-stone-700 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-white px-3.5 py-1.5 rounded-lg transition"
+              >
+                Sign in
+              </button>
+            </>
+          ) : usageLeft !== null ? (
+            <span className="text-xs font-medium text-stone-500 dark:text-stone-400">
+              {usageLeft} messages left today
+            </span>
+          ) : null}
+        </div>
+      </div>
+
+      {isEmpty ? (
+        // Empty state: greeting and composer centred, like a fresh page
+        <div className="flex-1 overflow-y-auto flex flex-col items-center justify-center px-4 pb-[10vh]">
+          <div className="w-full max-w-2xl">
+            <h1 className="text-center font-pt-serif text-3xl md:text-4xl text-stone-800 dark:text-stone-100 mb-8 flex items-center justify-center gap-3">
+              <span className="text-emerald-600 dark:text-emerald-400 text-2xl md:text-3xl" aria-hidden>✻</span>
+              {topic ? `Let's talk about ${topic}` : `${timeGreeting()}${firstName ? `, ${firstName}` : ""}`}
+            </h1>
+            {composer}
+            {!isLocked && (
+              <div className="mt-5 flex flex-wrap justify-center gap-2">
+                {SUGGESTIONS.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => handleSend(s)}
+                    className="rounded-full border border-stone-200 dark:border-stone-700 bg-white/60 dark:bg-stone-800/50 px-3.5 py-1.5 text-sm text-stone-600 dark:text-stone-300 hover:bg-white hover:text-stone-900 dark:hover:bg-stone-800 dark:hover:text-stone-100 transition"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto px-4">
+            <div className="max-w-3xl mx-auto w-full pt-4 pb-10 space-y-8">
+              {messages.map((msg) =>
+                msg.role === "user" ? (
+                  <div key={msg.id} className="flex justify-end">
+                    <div className="max-w-[85%] rounded-2xl bg-stone-200/70 dark:bg-stone-800 px-4 py-2.5 text-[15px] leading-relaxed text-stone-900 dark:text-stone-100 whitespace-pre-wrap break-words">
+                      {msg.content}
+                    </div>
+                  </div>
+                ) : (
+                  <div key={msg.id} className="group">
+                    <div className="text-[15px] leading-7 text-stone-800 dark:text-stone-200 break-words">
+                      {(msg.streaming || !animDone.has(msg.id)) && msg.content ? (
+                        // Typewriter animation: word by word, steady rate
+                        <StreamingText
+                          full={msg.content}
+                          onCaughtUp={() => { if (!msg.streaming) markAnimDone(msg.id); }}
+                        />
+                      ) : msg.streaming && !msg.content ? (
+                        <span className="inline-flex items-center gap-2 text-stone-400 dark:text-stone-500">
+                          <span className="text-emerald-600 dark:text-emerald-400 text-lg animate-spin [animation-duration:2.5s]" aria-hidden>✻</span>
+                          Thinking...
+                        </span>
+                      ) : (
+                        <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                          {msg.content}
+                        </ReactMarkdown>
+                      )}
+                    </div>
+                    {!msg.streaming && animDone.has(msg.id) && (
+                      <div className="mt-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition">
+                        <button
+                          onClick={() => handleCopy(msg)}
+                          className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-stone-500 hover:bg-stone-200/70 hover:text-stone-800 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-200 transition"
+                          aria-label="Copy reply"
+                        >
+                          {copiedId === msg.id ? <Check size={14} /> : <Copy size={14} />}
+                          {copiedId === msg.id ? "Copied" : "Copy"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+          </div>
+
+          {/* Composer pinned to the bottom */}
+          <div className="shrink-0 px-4 pb-4 md:pb-5">
+            <div className="max-w-3xl mx-auto">{composer}</div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -489,7 +493,7 @@ function StreamingText({ full, onCaughtUp }: { full: string; onCaughtUp: () => v
   return (
     <span className="whitespace-pre-wrap">
       {full.slice(0, shown)}
-      <span className="inline-block w-0.5 h-[1.1em] ml-0.5 bg-emerald-500 animate-pulse align-middle" />
+      <span className="inline-block w-2 h-2 ml-1 rounded-full bg-emerald-500 animate-pulse align-middle" />
     </span>
   );
 }
