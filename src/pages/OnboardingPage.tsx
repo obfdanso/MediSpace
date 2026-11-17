@@ -131,7 +131,13 @@ export default function OnboardingPage() {
   const handleSkip = async () => {
     if (!user) return
     setSaving(true)
-    await upsertProfile({ id: user.id, onboarding_completed: true })
+    setError('')
+    const { error: profileErr } = await upsertProfile({ id: user.id, onboarding_completed: true })
+    if (profileErr) {
+      setError(profileErr.message)
+      setSaving(false)
+      return
+    }
     await refreshProfile()
     navigate('/chat')
   }
@@ -163,7 +169,12 @@ export default function OnboardingPage() {
       return
     }
 
-    await upsertProfile({ id: user.id, onboarding_completed: true })
+    const { error: profileErr } = await upsertProfile({ id: user.id, onboarding_completed: true })
+    if (profileErr) {
+      setError(profileErr.message)
+      setSaving(false)
+      return
+    }
     await refreshProfile()
     navigate(isEditMode ? '/billing' : '/chat')
   }
