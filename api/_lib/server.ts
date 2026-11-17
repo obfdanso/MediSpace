@@ -42,6 +42,7 @@ export function json(body: unknown, status = 200) {
 
 export interface Caller {
   userId: string | null
+  email: string | null
   tier: Tier
   ip: string
 }
@@ -50,13 +51,16 @@ export interface Caller {
 export async function getCaller(req: Request): Promise<Caller> {
   const ip = (req.headers.get('x-forwarded-for') ?? '').split(',')[0].trim() || 'unknown'
   const auth = req.headers.get('authorization')
-  if (!db || !auth?.startsWith('Bearer ')) return { userId: null, tier: 'anonymous', ip }
+  const anonymous: Caller = { userId: null, email: null, tier: 'anonymous', ip }
+  if (!db || !auth?.startsWith('Bearer ')) return anonymous
 
   const { data, error } = await db.auth.getUser(auth.slice(7))
-  if (error || !data.user) return { userId: null, tier: 'anonymous', ip }
+  if (error || !data.user) return anonymous
 
-  const { data: profile } = await db.from('profiles').select('tier').eq('id', data.user.id).maybeSingle()
-  return { userId: data.user.id, tier: profile?.tier === 'premium' ? 'premium' : 'free', ip }
+  // Premium is a paid pass: it counts only while premium_until is in the future
+  const { data: profile } = await db.from('profiles').select('premium_until').eq('id', data.user.id).maybeSingle()
+  const until = profile?.premium_until ? new Date(profile.premium_until).getTime() : 0
+  return { userId: data.user.id, email: data.user.email ?? null, tier: until > Date.now() ? 'premium' : 'free', ip }
 }
 
 const today = () => new Date().toISOString().slice(0, 10)
