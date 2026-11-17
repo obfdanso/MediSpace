@@ -505,10 +505,25 @@ function StreamingText({ full, onCaughtUp }: { full: string; onCaughtUp: () => v
     return () => clearInterval(id);
   }, []); // runs once for the lifetime of this component
 
+  // Render the revealed part as markdown straight away, so headings, bullets
+  // and bold appear formatted while typing instead of snapping in at the end
   return (
-    <span className="whitespace-pre-wrap">
-      {full.slice(0, shown)}
-      <span className="inline-block w-2 h-2 ml-1 rounded-full bg-emerald-500 animate-pulse align-middle" />
-    </span>
+    <div>
+      <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+        {closeOpenMarkers(full.slice(0, shown))}
+      </ReactMarkdown>
+      <span className="inline-block w-2 h-2 mt-1 rounded-full bg-emerald-500 animate-pulse" />
+    </div>
   );
+}
+
+// Temporarily closes a half-typed **bold**, `code` span or code block so
+// its markers never flash on screen as raw symbols
+function closeOpenMarkers(text: string): string {
+  const count = (s: string, re: RegExp) => (s.match(re) ?? []).length;
+  if (count(text, /```/g) % 2 === 1) return text + "\n```";
+  let out = text;
+  if (count(out, /\*\*/g) % 2 === 1) out += "**";
+  if (count(out.replace(/```/g, ""), /`/g) % 2 === 1) out += "`";
+  return out;
 }
