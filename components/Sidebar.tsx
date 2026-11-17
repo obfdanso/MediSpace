@@ -200,7 +200,7 @@ export default function ChatSidebar({
             {filtered.map(conv => (
               <div
                 key={conv.id}
-                onClick={() => onSelectConversation(conv.id)}
+                onClick={() => { onSelectConversation(conv.id); if (isMobile) setIsOpen(false) }}
                 title={conv.title}
                 className={`w-full cursor-pointer flex items-center gap-2.5 px-2 py-2 group transition ${
                   activeConversationId === conv.id
