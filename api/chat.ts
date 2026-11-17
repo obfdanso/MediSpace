@@ -12,6 +12,9 @@ import { buildSystemPrompt, type HealthProfile } from './_lib/prompt'
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions'
 const MAX_MESSAGE_LENGTH = 4000
 const HISTORY_LIMIT = 20
+const DEFAULT_MODEL = 'llama-3.3-70b-versatile'
+// Preferred general chat models, best first, used if the configured one is gone
+const MODEL_PREFERENCES = [/llama-?4.*maverick/i, /llama.*70b/i, /gpt-oss-120b/i, /llama-?4/i, /qwen/i, /gpt-oss/i, /llama/i]
 
 type ChatMessage = { role: 'system' | 'user' | 'assistant'; content: string }
 
@@ -87,23 +90,24 @@ export async function POST(req: Request): Promise<Response> {
   }
 
   // ── Ask the model ─────────────────────────────────────────────────────────
+  const messages: ChatMessage[] = [
+    { role: 'system', content: buildSystemPrompt(topic, healthProfile) },
+    ...history,
+    { role: 'user', content: message },
+  ]
+
   let upstream: Response
   try {
-    upstream = await fetch(GROQ_URL, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: env('GROQ_MODEL') ?? 'llama-3.3-70b-versatile',
-        messages: [
-          { role: 'system', content: buildSystemPrompt(topic, healthProfile) },
-          ...history,
-          { role: 'user', content: message },
-        ],
-        stream: true,
-        temperature: 0.4,
-        max_completion_tokens: 1500,
-      }),
-    })
+    upstream = await askGroq(apiKey, env('GROQ_MODEL') ?? DEFAULT_MODEL, messages)
+
+    // The model may have been retired: pick one Groq still offers and retry once
+    if (!upstream.ok && (upstream.status === 400 || upstream.status === 404)) {
+      const detail = await upstream.clone().text().catch(() => '')
+      if (/model/i.test(detail)) {
+        const fallback = await pickAvailableModel(apiKey)
+        if (fallback) upstream = await askGroq(apiKey, fallback, messages)
+      }
+    }
   } catch {
     await refundMessage(caller)
     return json({ error: 'The AI service could not be reached. Please try again.' }, 502)
@@ -113,9 +117,17 @@ export async function POST(req: Request): Promise<Response> {
     const detail = await upstream.text().catch(() => '')
     console.error('[chat] groq error', upstream.status, detail.slice(0, 500))
     await refundMessage(caller)
-    return upstream.status === 429
-      ? json({ error: 'The AI is busy right now. Please try again in a minute.' }, 503)
-      : json({ error: 'The AI service is unavailable right now. Please try again.' }, 502)
+    // Groq's error code (never the key) helps tell a bad key from a retired model
+    let code = ''
+    try { code = JSON.parse(detail)?.error?.code ?? '' } catch { /* not json */ }
+    const ref = `groq ${upstream.status}${code ? ` ${code}` : ''}`
+    if (upstream.status === 429) {
+      return json({ error: 'The AI is busy right now. Please try again in a minute.', code: ref }, 503)
+    }
+    if (upstream.status === 401 || upstream.status === 403) {
+      return json({ error: "The AI service rejected the site's API key.", code: ref }, 502)
+    }
+    return json({ error: 'The AI service is unavailable right now. Please try again.', code: ref }, 502)
   }
 
   // The model accepted the request: now it counts and gets saved
@@ -194,4 +206,28 @@ export async function POST(req: Request): Promise<Response> {
       Connection: 'keep-alive',
     },
   })
+}
+
+function askGroq(apiKey: string, model: string, messages: ChatMessage[]) {
+  return fetch(GROQ_URL, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model, messages, stream: true, temperature: 0.4, max_completion_tokens: 1500 }),
+  })
+}
+
+async function pickAvailableModel(apiKey: string): Promise<string | null> {
+  const res = await fetch('https://api.groq.com/openai/v1/models', {
+    headers: { Authorization: `Bearer ${apiKey}` },
+  }).catch(() => null)
+  if (!res?.ok) return null
+  const { data } = await res.json() as { data?: { id: string; active?: boolean }[] }
+  const ids = (data ?? [])
+    .filter(m => m.active !== false && !/whisper|tts|guard|embed|vision|compound/i.test(m.id))
+    .map(m => m.id)
+  for (const pattern of MODEL_PREFERENCES) {
+    const hit = ids.find(id => pattern.test(id))
+    if (hit) return hit
+  }
+  return ids[0] ?? null
 }
