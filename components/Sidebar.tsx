@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Plus, Search, Trash2, CreditCard, Zap, LogOut, Home, Sun, Moon, ChevronsUpDown, LogIn } from 'lucide-react'
 import { useAuth } from './AuthContext'
 import { useTheme } from './ThemeProvider'
-import { getConversations, deleteConversation, type Conversation } from '@/lib/supabase'
+import { getConversations, deleteConversation, isPremium, type Conversation } from '@/lib/supabase'
 
 interface ChatSidebarProps {
   activeConversationId: string | null
@@ -137,7 +137,7 @@ export default function ChatSidebar({
 
   const displayName = profile?.full_name?.trim() || user?.email?.split('@')[0] || 'Guest'
   const initials = displayName.split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase()
-  const isPro = profile?.tier === 'premium'
+  const isPro = isPremium(profile)
 
   const iconBtn = 'p-2 rounded-lg text-stone-500 dark:text-stone-400 hover:bg-stone-200/70 dark:hover:bg-stone-800 hover:text-stone-900 dark:hover:text-stone-100 transition flex-shrink-0'
   const menuItem = 'w-full flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700/60 transition text-left'

@@ -144,18 +144,24 @@ export async function getPlans(): Promise<Plan[]> {
   return data.plans
 }
 
-export async function upgradeToPremium(): Promise<{ tier: 'premium'; message: string }> {
-  const headers = await authHeaders()
-  const res = await fetch(`${BACKEND_URL}/api/billing/upgrade`, { method: 'POST', headers })
-  const body = await res.json()
-  if (!res.ok) throw new Error(body.error ?? 'Upgrade failed')
-  return body
+/** Starts a Paystack checkout for a Premium pass; resolves to the payment page URL. */
+export async function startCheckout(): Promise<string> {
+  const res = await fetch(`${BACKEND_URL}/api/billing/checkout`, { method: 'POST', headers: await authHeaders() })
+  const body = await res.json().catch(() => ({}))
+  if (!res.ok || !body.url) throw new Error(body.error ?? 'Could not start the payment.')
+  return body.url
 }
 
-export async function downgradeToFree(): Promise<{ tier: 'free'; message: string }> {
-  const headers = await authHeaders()
-  const res = await fetch(`${BACKEND_URL}/api/billing/downgrade`, { method: 'POST', headers })
-  const body = await res.json()
-  if (!res.ok) throw new Error(body.error ?? 'Downgrade failed')
-  return body
+export type PaymentCheck =
+  | { status: 'credited'; premiumUntil: string }
+  | { status: 'pending' | 'failed' | 'mismatch' | 'error'; message: string }
+
+/** Confirms a payment after the user returns from Paystack. */
+export async function verifyPayment(reference: string): Promise<PaymentCheck> {
+  const res = await fetch(`${BACKEND_URL}/api/billing/verify?reference=${encodeURIComponent(reference)}`, {
+    headers: await authHeaders(),
+  })
+  const body = await res.json().catch(() => ({}))
+  if (body.status) return body
+  return { status: 'error', message: body.error ?? 'Could not check the payment.' }
 }

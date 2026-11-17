@@ -16,7 +16,13 @@ export interface Profile {
   full_name: string | null
   onboarding_completed: boolean
   tier: 'free' | 'premium'
+  premium_until: string | null
   created_at: string
+}
+
+/** Premium is a paid pass that lasts until premium_until. */
+export function isPremium(profile: Pick<Profile, 'premium_until'> | null | undefined): boolean {
+  return !!profile?.premium_until && new Date(profile.premium_until).getTime() > Date.now()
 }
 
 export interface HealthProfile {

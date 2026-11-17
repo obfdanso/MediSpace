@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Check, X, Zap, Shield, Loader2, Sun, Moon, User, CreditCard, Settings } from "lucide-react";
 import { useAuth } from "@/components/AuthContext";
 import { useTheme } from "@/components/ThemeProvider";
-import { getHealthProfile, upsertHealthProfile } from "@/lib/supabase";
-import { getPlans, upgradeToPremium, downgradeToFree } from "@/lib/api";
+import { getHealthProfile, upsertHealthProfile, isPremium } from "@/lib/supabase";
+import { getPlans, startCheckout, verifyPayment } from "@/lib/api";
 import type { Plan } from "@/lib/api";
 
 type Tab = "plan" | "profile" | "preferences";
@@ -86,7 +86,7 @@ export default function BillingPage() {
         </div>
 
         {tab === "plan" && <PlanTab />}
-        {tab === "profile" && <ProfileTab userId={user?.id ?? null} tier={profile?.tier ?? "free"} onUpgrade={() => setTab("plan")} />}
+        {tab === "profile" && <ProfileTab userId={user?.id ?? null} tier={isPremium(profile) ? "premium" : "free"} onUpgrade={() => setTab("plan")} />}
         {tab === "preferences" && <PreferencesTab theme={theme} toggleTheme={toggleTheme} logout={logout} />}
       </div>
     </div>
@@ -95,12 +95,17 @@ export default function BillingPage() {
 
 // ─── Plan Tab ─────────────────────────────────────────────────────────────────
 
+const formatDate = (iso: string) =>
+  new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
+
 function PlanTab() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState<"upgrade" | "downgrade" | null>(null);
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [paying, setPaying] = useState(false);
+  const [checking, setChecking] = useState(false);
+  const [message, setMessage] = useState<{ type: "success" | "error" | "info"; text: string } | null>(null);
   const { profile, refreshProfile } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     getPlans()
@@ -109,44 +114,59 @@ function PlanTab() {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleUpgrade = async () => {
-    setActionLoading("upgrade");
-    setMessage(null);
-    try {
-      await upgradeToPremium();
-      await refreshProfile();
-      setMessage({ type: "success", text: "You're now on Premium! Enjoy 200 messages/day." });
-    } catch (err: unknown) {
-      setMessage({ type: "error", text: err instanceof Error ? err.message : "Upgrade failed." });
-    } finally {
-      setActionLoading(null);
-    }
-  };
+  // Back from Paystack: it adds ?reference=... to the return address
+  useEffect(() => {
+    const reference = searchParams.get("reference") ?? searchParams.get("trxref");
+    if (!reference) return;
+    setChecking(true);
+    verifyPayment(reference)
+      .then(async (result) => {
+        if (result.status === "credited") {
+          await refreshProfile();
+          setMessage({ type: "success", text: `Payment received. Premium is active until ${formatDate(result.premiumUntil)}.` });
+        } else if (result.status === "pending") {
+          setMessage({ type: "info", text: "Your payment is still processing. Premium switches on by itself once it is confirmed, so check back in a minute." });
+        } else {
+          setMessage({ type: "error", text: result.message });
+        }
+      })
+      .finally(() => {
+        setChecking(false);
+        setSearchParams({}, { replace: true });
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const handleDowngrade = async () => {
-    setActionLoading("downgrade");
+  const handlePay = async () => {
+    setPaying(true);
     setMessage(null);
     try {
-      await downgradeToFree();
-      await refreshProfile();
-      setMessage({ type: "success", text: "Switched back to the Free plan." });
+      window.location.href = await startCheckout();
     } catch (err: unknown) {
-      setMessage({ type: "error", text: err instanceof Error ? err.message : "Downgrade failed." });
-    } finally {
-      setActionLoading(null);
+      setMessage({ type: "error", text: err instanceof Error ? err.message : "Could not start the payment." });
+      setPaying(false);
     }
   };
 
   if (loading) return <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-emerald-600" /></div>;
 
-  const currentTier = profile?.tier ?? "free";
+  const premium = isPremium(profile);
+  const currentTier = premium ? "premium" : "free";
 
   return (
     <div>
+      {checking && (
+        <div className="mb-6 px-5 py-3.5 rounded-xl text-sm font-medium flex items-center gap-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+          <Loader2 size={16} className="animate-spin" /> Confirming your payment...
+        </div>
+      )}
+
       {message && (
-        <div className={`mb-6 px-5 py-3.5 rounded-xl text-sm font-medium flex items-center justify-between ${
+        <div className={`mb-6 px-5 py-3.5 rounded-xl text-sm font-medium flex items-center justify-between gap-3 ${
           message.type === "success"
             ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
+            : message.type === "info"
+            ? "bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800"
             : "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800"
         }`}>
           <span>{message.text}</span>
@@ -158,26 +178,29 @@ function PlanTab() {
         <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 shadow-sm">
           <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
           Current plan: <span className="text-emerald-600 dark:text-emerald-400 capitalize">{currentTier}</span>
+          {premium && profile?.premium_until && (
+            <span className="font-normal text-gray-500 dark:text-gray-400">· until {formatDate(profile.premium_until)}</span>
+          )}
         </span>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {plans.map((plan) => {
           const isCurrent = plan.id === currentTier;
-          const isPremium = plan.id === "premium";
+          const isPremiumPlan = plan.id === "premium";
 
           return (
             <div
               key={plan.id}
               className={`relative rounded-2xl p-8 flex flex-col ${
-                isPremium
+                isPremiumPlan
                   ? "bg-emerald-600 text-white shadow-xl shadow-emerald-500/20"
                   : "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white shadow-sm"
               }`}
             >
               {isCurrent && (
                 <div className={`absolute top-4 right-4 text-xs font-bold px-3 py-1 rounded-full ${
-                  isPremium ? "bg-white/20 text-white" : "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300"
+                  isPremiumPlan ? "bg-white/20 text-white" : "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300"
                 }`}>
                   Current plan
                 </div>
@@ -185,9 +208,9 @@ function PlanTab() {
 
               <div className="flex items-center gap-3 mb-6">
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                  isPremium ? "bg-white/20" : "bg-emerald-100 dark:bg-emerald-900/40"
+                  isPremiumPlan ? "bg-white/20" : "bg-emerald-100 dark:bg-emerald-900/40"
                 }`}>
-                  {isPremium
+                  {isPremiumPlan
                     ? <Zap size={20} className="text-white" />
                     : <Shield size={20} className="text-emerald-600 dark:text-emerald-400" />
                   }
@@ -197,11 +220,11 @@ function PlanTab() {
 
               <div className="mb-6">
                 <span className="text-4xl font-bold">
-                  {plan.price === 0 ? "Free" : `$${plan.price}`}
+                  {plan.price === 0 ? "Free" : `${plan.currency} ${plan.price}`}
                 </span>
                 {plan.price > 0 && (
-                  <span className={`text-sm ml-1 ${isPremium ? "text-emerald-100" : "text-gray-500 dark:text-gray-400"}`}>
-                    /{plan.interval}
+                  <span className={`text-sm ml-1 ${isPremiumPlan ? "text-emerald-100" : "text-gray-500 dark:text-gray-400"}`}>
+                    / {plan.interval}
                   </span>
                 )}
               </div>
@@ -209,8 +232,8 @@ function PlanTab() {
               <ul className="space-y-3 flex-1 mb-8">
                 {plan.features.map((f) => (
                   <li key={f} className="flex items-start gap-2.5 text-sm">
-                    <Check size={16} className={`mt-0.5 flex-shrink-0 ${isPremium ? "text-white" : "text-emerald-500"}`} />
-                    <span className={isPremium ? "text-emerald-50" : "text-gray-700 dark:text-gray-300"}>{f}</span>
+                    <Check size={16} className={`mt-0.5 flex-shrink-0 ${isPremiumPlan ? "text-white" : "text-emerald-500"}`} />
+                    <span className={isPremiumPlan ? "text-emerald-50" : "text-gray-700 dark:text-gray-300"}>{f}</span>
                   </li>
                 ))}
                 {plan.unavailable.map((f) => (
@@ -221,42 +244,31 @@ function PlanTab() {
                 ))}
               </ul>
 
-              {isCurrent ? (
-                <div className={`w-full py-3 rounded-xl text-center text-sm font-semibold ${
-                  isPremium ? "bg-white/20 text-white" : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
-                }`}>
-                  Active plan
-                </div>
-              ) : isPremium ? (
+              {isPremiumPlan ? (
                 <button
-                  onClick={handleUpgrade}
-                  disabled={actionLoading !== null}
+                  onClick={handlePay}
+                  disabled={paying || checking}
                   className="w-full py-3 rounded-xl text-sm font-semibold bg-white text-emerald-600 hover:bg-emerald-50 transition disabled:opacity-60 flex items-center justify-center gap-2"
                 >
-                  {actionLoading === "upgrade"
-                    ? <><Loader2 size={16} className="animate-spin" /> Upgrading...</>
-                    : "Upgrade to Premium"
+                  {paying
+                    ? <><Loader2 size={16} className="animate-spin" /> Opening Paystack...</>
+                    : premium
+                    ? `Add ${plan.interval} · ${plan.currency} ${plan.price}`
+                    : `Get Premium · ${plan.currency} ${plan.price}`
                   }
                 </button>
               ) : (
-                <button
-                  onClick={handleDowngrade}
-                  disabled={actionLoading !== null}
-                  className="w-full py-3 rounded-xl text-sm font-semibold border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition disabled:opacity-60 flex items-center justify-center gap-2"
-                >
-                  {actionLoading === "downgrade"
-                    ? <><Loader2 size={16} className="animate-spin" /> Downgrading...</>
-                    : "Switch to Free"
-                  }
-                </button>
+                <div className="w-full py-3 rounded-xl text-center text-sm font-semibold bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                  {isCurrent ? "Active plan" : "Included with Premium"}
+                </div>
               )}
             </div>
           );
         })}
       </div>
 
-      <p className="text-center text-xs text-gray-400 dark:text-gray-600 mt-6">
-        This is a demo billing page. No real payment is processed.
+      <p className="text-center text-xs text-gray-400 dark:text-gray-500 mt-6">
+        Payments are handled securely by Paystack. Pay with card or Mobile Money. Each payment adds 30 days of Premium and does not renew automatically.
       </p>
     </div>
   );
