@@ -466,7 +466,7 @@ export default function AuthPage() {
                 </form>
               )}
 
-              <div className="mt-6 pt-5 border-t border-gray-100 dark:border-gray-800 flex items-center justify-center gap-5">
+              <div className="mt-6 pt-5 border-t border-gray-100 dark:border-gray-800 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
                 <div className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
                   Private by Design
