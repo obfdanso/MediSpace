@@ -6,7 +6,7 @@
  *   data: [DONE]
  * Signed-in users get their conversation saved; everyone gets a daily limit.
  */
-import { db, env, json, getCaller, getLimit, getTodayUsage, incrementUsage } from './_lib/server'
+import { db, env, json, getCaller, getLimit, reserveMessage, refundMessage } from './_lib/server'
 import { buildSystemPrompt, type HealthProfile } from './_lib/prompt'
 
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions'
@@ -37,14 +37,22 @@ export async function POST(req: Request): Promise<Response> {
   // ── Who is asking, and do they have messages left today ───────────────────
   const caller = await getCaller(req)
   const limit = getLimit(caller.tier)
-  const usageToday = await getTodayUsage(caller)
+  // Claimed up front so parallel requests can't slip past the limit;
+  // handed back below if the AI call fails
+  let newUsage: number | null
+  try {
+    newUsage = await reserveMessage(caller, limit)
+  } catch (err) {
+    console.error('[chat] usage error', err)
+    return json({ error: 'Something went wrong. Please try again.' }, 500)
+  }
 
-  if (usageToday >= limit) {
+  if (newUsage === null) {
     return json({
       error: caller.tier === 'anonymous'
         ? 'Free message limit reached. Sign in to keep chatting.'
         : 'You have reached today\'s message limit. It resets at midnight UTC.',
-      usageToday,
+      usageToday: limit,
       usageLimit: limit,
       usageLeft: 0,
     }, 429)
@@ -60,6 +68,7 @@ export async function POST(req: Request): Promise<Response> {
       const { data: conv } = await db
         .from('conversations').select('id, user_id').eq('id', requestedConversation).maybeSingle()
       if (!conv || conv.user_id !== caller.userId) {
+        await refundMessage(caller)
         return json({ error: 'Conversation not found.' }, 403)
       }
       conversationId = conv.id
@@ -96,12 +105,14 @@ export async function POST(req: Request): Promise<Response> {
       }),
     })
   } catch {
+    await refundMessage(caller)
     return json({ error: 'The AI service could not be reached. Please try again.' }, 502)
   }
 
   if (!upstream.ok || !upstream.body) {
     const detail = await upstream.text().catch(() => '')
     console.error('[chat] groq error', upstream.status, detail.slice(0, 500))
+    await refundMessage(caller)
     return upstream.status === 429
       ? json({ error: 'The AI is busy right now. Please try again in a minute.' }, 503)
       : json({ error: 'The AI service is unavailable right now. Please try again.' }, 502)
@@ -115,14 +126,11 @@ export async function POST(req: Request): Promise<Response> {
     conversationId = conv?.id ?? null
   }
 
-  await Promise.all([
-    incrementUsage(caller),
-    db && conversationId
-      ? db.from('messages').insert({ conversation_id: conversationId, role: 'user', content: message })
-      : null,
-  ])
+  if (db && conversationId) {
+    await db.from('messages').insert({ conversation_id: conversationId, role: 'user', content: message })
+  }
 
-  const newUsage = usageToday + 1
+  const usedToday = newUsage
   const encoder = new TextEncoder()
   const decoder = new TextDecoder()
   const reader = upstream.body.getReader()
@@ -165,9 +173,9 @@ export async function POST(req: Request): Promise<Response> {
         send({
           type: 'done',
           conversationId,
-          usageToday: newUsage,
+          usageToday: usedToday,
           usageLimit: limit,
-          usageLeft: Math.max(0, limit - newUsage),
+          usageLeft: Math.max(0, limit - usedToday),
         })
         controller.enqueue(encoder.encode('data: [DONE]\n\n'))
       } catch (err) {

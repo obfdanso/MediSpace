@@ -147,31 +147,49 @@ create table if not exists public.daily_usage (
 alter table public.daily_usage enable row level security;
 -- No policies on purpose: the browser can't read or write it
 
-create or replace function public.increment_daily_usage_user(p_user_id uuid, p_date date)
-returns void language plpgsql security definer set search_path = public as $$
+-- Claims one message from today's allowance in a single atomic step.
+-- Returns the new count, or null when the limit is already reached.
+create or replace function public.try_use_message(p_user_id uuid, p_ip text, p_date date, p_limit integer)
+returns integer language plpgsql security definer set search_path = public as $$
+declare
+  v_count integer;
 begin
-  insert into daily_usage (user_id, ip_address, date, message_count)
-    values (p_user_id, null, p_date, 1)
-  on conflict (user_id, date)
-  do update set message_count = daily_usage.message_count + 1, updated_at = now();
+  if p_user_id is not null then
+    insert into daily_usage (user_id, ip_address, date, message_count)
+      values (p_user_id, null, p_date, 1)
+    on conflict (user_id, date)
+    do update set message_count = daily_usage.message_count + 1, updated_at = now()
+      where daily_usage.message_count < p_limit
+    returning message_count into v_count;
+  else
+    insert into daily_usage (user_id, ip_address, date, message_count)
+      values (null, p_ip, p_date, 1)
+    on conflict (ip_address, date)
+    do update set message_count = daily_usage.message_count + 1, updated_at = now()
+      where daily_usage.message_count < p_limit
+    returning message_count into v_count;
+  end if;
+  return v_count;
 end;
 $$;
 
-create or replace function public.increment_daily_usage_ip(p_ip text, p_date date)
+-- Gives a message back when the AI call fails after it was claimed
+create or replace function public.refund_message(p_user_id uuid, p_ip text, p_date date)
 returns void language plpgsql security definer set search_path = public as $$
 begin
-  insert into daily_usage (user_id, ip_address, date, message_count)
-    values (null, p_ip, p_date, 1)
-  on conflict (ip_address, date)
-  do update set message_count = daily_usage.message_count + 1, updated_at = now();
+  update daily_usage
+     set message_count = greatest(message_count - 1, 0), updated_at = now()
+   where date = p_date
+     and ((p_user_id is not null and user_id = p_user_id)
+       or (p_user_id is null and user_id is null and ip_address = p_ip));
 end;
 $$;
 
 -- Only the server may call these
-revoke execute on function public.increment_daily_usage_user(uuid, date) from public, anon, authenticated;
-revoke execute on function public.increment_daily_usage_ip(text, date) from public, anon, authenticated;
-grant execute on function public.increment_daily_usage_user(uuid, date) to service_role;
-grant execute on function public.increment_daily_usage_ip(text, date) to service_role;
+revoke execute on function public.try_use_message(uuid, text, date, integer) from public, anon, authenticated;
+revoke execute on function public.refund_message(uuid, text, date) from public, anon, authenticated;
+grant execute on function public.try_use_message(uuid, text, date, integer) to service_role;
+grant execute on function public.refund_message(uuid, text, date) to service_role;
 
 -- ─── Contact messages ────────────────────────────────────────────────────────
 -- Written by the public contact form. Anyone may send one; nobody can read

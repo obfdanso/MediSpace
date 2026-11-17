@@ -55,21 +55,21 @@ export async function getCaller(req: Request): Promise<Caller> {
 
 const today = () => new Date().toISOString().slice(0, 10)
 
-export async function getTodayUsage(caller: Caller): Promise<number> {
-  if (!db) return 0
-  let query = db.from('daily_usage').select('message_count').eq('date', today())
-  query = caller.userId
-    ? query.eq('user_id', caller.userId)
-    : query.eq('ip_address', caller.ip).is('user_id', null)
-  const { data } = await query.maybeSingle()
-  return data?.message_count ?? 0
+/**
+ * Atomically claims one message from today's allowance.
+ * Returns the new count, or null if the limit was already reached.
+ */
+export async function reserveMessage(caller: Caller, limit: number): Promise<number | null> {
+  if (!db) return 1 // no database configured: limits can't be tracked
+  const { data, error } = await db.rpc('try_use_message', {
+    p_user_id: caller.userId, p_ip: caller.ip, p_date: today(), p_limit: limit,
+  })
+  if (error) throw error
+  return typeof data === 'number' ? data : null
 }
 
-export async function incrementUsage(caller: Caller) {
+/** Hands back a claimed message when the AI call fails. */
+export async function refundMessage(caller: Caller) {
   if (!db) return
-  if (caller.userId) {
-    await db.rpc('increment_daily_usage_user', { p_user_id: caller.userId, p_date: today() })
-  } else {
-    await db.rpc('increment_daily_usage_ip', { p_ip: caller.ip, p_date: today() })
-  }
+  await db.rpc('refund_message', { p_user_id: caller.userId, p_ip: caller.ip, p_date: today() })
 }
