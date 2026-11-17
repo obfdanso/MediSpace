@@ -25,9 +25,9 @@ export default function SafetyPage() {
               measures.
             </p>
             <ul className="list-disc list-inside space-y-2 text-gray-600 dark:text-gray-300">
-              <li>End-to-end encryption</li>
+              <li>Encrypted connections between you and MediSpace</li>
+              <li>Only you can see your health profile and saved chats</li>
               <li>No data sharing with third parties</li>
-              <li>Regular security audits</li>
             </ul>
           </div>
         </div>
