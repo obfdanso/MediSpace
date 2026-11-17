@@ -57,7 +57,8 @@ export async function sendChatMessage(params: {
 
   if (!response.ok) {
     const body = await response.json().catch(() => ({}))
-    throw Object.assign(new Error(body.error ?? 'Chat request failed'), {
+    const detail = body.code ? ` (${body.code})` : !body.error ? ` (error ${response.status})` : ''
+    throw Object.assign(new Error((body.error ?? 'Chat request failed') + detail), {
       status: response.status,
       usageLeft: body.usageLeft ?? 0,
     })
