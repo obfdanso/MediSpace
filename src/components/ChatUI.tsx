@@ -1,9 +1,9 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, memo } from "react";
 import { ArrowUp, Loader2, Copy, Check, X, Lock, AlertTriangle } from "lucide-react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/components/AuthContext";
 import { getMessages } from "@/lib/supabase";
-import { sendChatMessage } from "@/lib/api";
+import { sendChatMessage, getUsage } from "@/lib/api";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -21,8 +21,8 @@ interface ChatUIProps {
   onConversationCreated?: (id: string) => void;
 }
 
-// Anonymous free limit (client-side UI only — backend enforces actual limit)
-const ANON_LIMIT = 3;
+// Shown only until the server reports the real allowance (it enforces the limit)
+const DEFAULT_ANON_LIMIT = 3;
 
 const SUGGESTIONS = [
   "What could be causing my headaches?",
@@ -81,7 +81,8 @@ export default function ChatUI({
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
-  const [usageLeft, setUsageLeft] = useState<number | null>(null);
+  // Today's allowance as reported by the server
+  const [usage, setUsage] = useState<{ left: number; limit: number } | null>(null);
   const [errorBanner, setErrorBanner] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   // Tracks which AI message IDs have finished their typewriter animation
@@ -95,7 +96,17 @@ export default function ChatUI({
   // still streaming for the previous chat can't write into the new one
   const viewSeq = useRef(0);
 
-  const remainingMessages = ANON_LIMIT - messageCount;
+  const remainingMessages = usage ? usage.left : Math.max(0, DEFAULT_ANON_LIMIT - messageCount);
+  const allowance = usage?.limit ?? DEFAULT_ANON_LIMIT;
+
+  // Ask the server for the real count on load and whenever sign-in changes
+  useEffect(() => {
+    let cancelled = false;
+    getUsage().then((u) => {
+      if (!cancelled && u) setUsage({ left: u.usageLeft, limit: u.usageLimit });
+    });
+    return () => { cancelled = true; };
+  }, [isLoggedIn, user?.id]);
   const firstName = profile?.full_name?.trim().split(/\s+/)[0];
 
   useEffect(() => {
@@ -162,7 +173,7 @@ export default function ChatUI({
     const userContent = (text ?? input).trim();
     if (!userContent || isStreaming) return;
 
-    if (!isLoggedIn && messageCount >= ANON_LIMIT) {
+    if (!isLoggedIn && remainingMessages <= 0) {
       navigate("/auth");
       return;
     }
@@ -211,7 +222,7 @@ export default function ChatUI({
         if (onConversationCreated) onConversationCreated(result.conversationId);
       }
 
-      setUsageLeft(result.usageLeft);
+      setUsage({ left: result.usageLeft, limit: result.usageLimit });
 
       // Only answered messages count against the free allowance
       if (onNewMessage) onNewMessage();
@@ -222,6 +233,7 @@ export default function ChatUI({
 
       const error = err as { message?: string; status?: number }
       setErrorBanner(error.message ?? "Something went wrong. Please try again.");
+      if (error.status === 429) setUsage((u) => ({ left: 0, limit: u?.limit ?? allowance }));
 
       // Rate limited — redirect to auth for anonymous users
       if (error.status === 429 && !isLoggedIn) {
@@ -250,7 +262,7 @@ export default function ChatUI({
     } catch { /* clipboard unavailable */ }
   };
 
-  const isLocked = !isLoggedIn && messageCount >= ANON_LIMIT;
+  const isLocked = !isLoggedIn && remainingMessages <= 0;
   const isEmpty = messages.length === 0;
 
   const composer = (
@@ -270,7 +282,7 @@ export default function ChatUI({
         <div className="mb-2 flex flex-col sm:flex-row items-center justify-between gap-3 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-100 dark:bg-stone-800/60 px-4 py-3 text-sm text-stone-600 dark:text-stone-300">
           <span className="flex items-center gap-2">
             <Lock size={15} className="text-emerald-600 dark:text-emerald-400" />
-            You've used your {ANON_LIMIT} free messages
+            You've used your {allowance} free messages
           </span>
           <button
             onClick={() => navigate("/auth")}
@@ -367,9 +379,9 @@ export default function ChatUI({
                 Sign in
               </button>
             </>
-          ) : usageLeft !== null ? (
+          ) : usage !== null ? (
             <span className="text-xs font-medium text-stone-500 dark:text-stone-400">
-              {usageLeft} messages left today
+              {usage.left} messages left today
             </span>
           ) : null}
         </div>
@@ -427,9 +439,7 @@ export default function ChatUI({
                           Thinking...
                         </span>
                       ) : (
-                        <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-                          {msg.content}
-                        </ReactMarkdown>
+                        <Markdown text={msg.content} />
                       )}
                     </div>
                     {!msg.streaming && animDone.has(msg.id) && (
@@ -511,9 +521,7 @@ function StreamingText({ full, streaming, onCaughtUp }: { full: string; streamin
   // and bold appear formatted while typing instead of snapping in at the end
   return (
     <div>
-      <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-        {closeOpenMarkers(full.slice(0, shown))}
-      </ReactMarkdown>
+      <Markdown text={closeOpenMarkers(full.slice(0, shown))} />
       <span className="inline-block w-2 h-2 mt-1 rounded-full bg-emerald-500 animate-pulse" />
     </div>
   );
@@ -528,4 +536,43 @@ function closeOpenMarkers(text: string): string {
   if (count(out, /\*\*/g) % 2 === 1) out += "**";
   if (count(out.replace(/```/g, ""), /`/g) % 2 === 1) out += "`";
   return out;
+}
+
+// ─── Markdown, block by block ─────────────────────────────────────────────────
+// Splits on blank lines (never inside a code block) and memoises each block,
+// so while a reply types out only the last paragraph is re-parsed.
+
+function splitBlocks(text: string): string[] {
+  const blocks: string[] = [];
+  let current: string[] = [];
+  let inFence = false;
+  for (const line of text.split("\n")) {
+    if (/^\s*```/.test(line)) inFence = !inFence;
+    if (!inFence && line.trim() === "" && current.length) {
+      blocks.push(current.join("\n"));
+      current = [];
+    } else if (inFence || line.trim() !== "") {
+      current.push(line);
+    }
+  }
+  if (current.length) blocks.push(current.join("\n"));
+  return blocks;
+}
+
+const MarkdownBlock = memo(function MarkdownBlock({ text }: { text: string }) {
+  return (
+    <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+      {text}
+    </ReactMarkdown>
+  );
+});
+
+function Markdown({ text }: { text: string }) {
+  return (
+    <>
+      {splitBlocks(text).map((block, i) => (
+        <MarkdownBlock key={i} text={block} />
+      ))}
+    </>
+  );
 }
