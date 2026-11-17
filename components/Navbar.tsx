@@ -182,6 +182,16 @@ const Navbar = () => {
                 )}
               </button>
 
+              {/* Sign in (desktop; phones get it in the menu) */}
+              {!isLoggedIn && !isScrolled && (
+                <Link
+                  to="/auth"
+                  className="hidden lg:inline-block px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition"
+                >
+                  Sign In
+                </Link>
+              )}
+
               {/* Start Chat */}
               <Link
                 to="/chat"
