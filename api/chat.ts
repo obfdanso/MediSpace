@@ -14,6 +14,8 @@ const MAX_MESSAGE_LENGTH = 4000
 const HISTORY_LIMIT = 20
 const DEFAULT_MODEL = 'llama-3.3-70b-versatile'
 // Preferred general chat models, best first, used if the configured one is gone
+// Remembered for the life of this server instance once a fallback is found
+let fallbackModel: string | null = null
 const MODEL_PREFERENCES = [/llama-?4.*maverick/i, /llama.*70b/i, /gpt-oss-120b/i, /llama-?4/i, /qwen/i, /gpt-oss/i, /llama/i]
 
 type ChatMessage = { role: 'system' | 'user' | 'assistant'; content: string }
@@ -98,14 +100,18 @@ export async function POST(req: Request): Promise<Response> {
 
   let upstream: Response
   try {
-    upstream = await askGroq(apiKey, env('GROQ_MODEL') ?? DEFAULT_MODEL, messages)
+    upstream = await askGroq(apiKey, fallbackModel ?? env('GROQ_MODEL') ?? DEFAULT_MODEL, messages)
 
     // The model may have been retired: pick one Groq still offers and retry once
     if (!upstream.ok && (upstream.status === 400 || upstream.status === 404)) {
       const detail = await upstream.clone().text().catch(() => '')
       if (/model/i.test(detail)) {
         const fallback = await pickAvailableModel(apiKey)
-        if (fallback) upstream = await askGroq(apiKey, fallback, messages)
+        if (fallback) {
+          console.warn(`[chat] model unavailable, using ${fallback}. Set GROQ_MODEL to skip this lookup.`)
+          fallbackModel = fallback
+          upstream = await askGroq(apiKey, fallback, messages)
+        }
       }
     }
   } catch {
