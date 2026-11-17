@@ -347,7 +347,7 @@ export default function ChatUI({
               </span>
               <button
                 onClick={() => navigate("/auth")}
-                className="text-xs font-semibold text-white bg-stone-900 hover:bg-stone-700 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-white px-3.5 py-1.5 rounded-lg transition"
+                className="text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 px-3.5 py-1.5 rounded-lg transition"
               >
                 Sign in
               </button>
