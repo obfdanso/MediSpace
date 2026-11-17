@@ -95,6 +95,7 @@ export async function confirmPayment(reference: string, expectedUserId?: string)
     console.error('[paystack] credit failed', reference, error?.message)
     return { status: 'error', message: 'Payment received, but Premium could not be activated yet. It will retry automatically.' }
   }
+  console.log('[paystack] credited', reference, 'premium until', data)
   return { status: 'credited', premiumUntil: data as string }
 }
 
