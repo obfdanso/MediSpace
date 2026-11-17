@@ -287,6 +287,11 @@ function ProfileTab({ userId, tier, onUpgrade }: { userId: string | null; tier: 
       </div>
     );
   }
+  return <ProfileForm userId={userId} />;
+}
+
+// Kept separate from the upsell above so its hooks always run in the same order
+function ProfileForm({ userId }: { userId: string | null }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
