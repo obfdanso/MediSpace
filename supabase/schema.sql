@@ -119,3 +119,22 @@ create policy "Users can manage messages in their conversations"
       where id = conversation_id
     )
   );
+
+-- ─── Contact messages ────────────────────────────────────────────────────────
+-- Written by the public contact form. Anyone may send one; nobody can read
+-- them through the API, so view them in the Supabase dashboard.
+
+create table if not exists public.contact_messages (
+  id          uuid primary key default gen_random_uuid(),
+  name        text not null check (char_length(name) between 1 and 200),
+  email       text not null check (char_length(email) between 3 and 320),
+  message     text not null check (char_length(message) between 1 and 5000),
+  created_at  timestamptz not null default now()
+);
+
+alter table public.contact_messages enable row level security;
+
+create policy "Anyone can send a contact message"
+  on public.contact_messages for insert
+  to anon, authenticated
+  with check (true);
