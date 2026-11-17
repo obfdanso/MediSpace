@@ -91,6 +91,9 @@ export default function ChatUI({
   }, []);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  // Bumped whenever the visible conversation changes, so a reply that is
+  // still streaming for the previous chat can't write into the new one
+  const viewSeq = useRef(0);
 
   const remainingMessages = ANON_LIMIT - messageCount;
   const firstName = profile?.full_name?.trim().split(/\s+/)[0];
@@ -109,6 +112,11 @@ export default function ChatUI({
 
   // Load conversation when conversationId prop changes, or reset for new chat
   useEffect(() => {
+    if (conversationId !== activeConversationId) {
+      viewSeq.current++;
+      setErrorBanner(null);
+      setIsStreaming(false);
+    }
     if (!isLoggedIn || !user) {
       // Signed out: don't leave a saved conversation on screen
       if (activeConversationId) {
@@ -171,6 +179,8 @@ export default function ChatUI({
     setInput("");
     setErrorBanner(null);
     setIsStreaming(true);
+    const seq = viewSeq.current;
+    const stillHere = () => viewSeq.current === seq;
 
     try {
       const result = await sendChatMessage({
@@ -185,6 +195,8 @@ export default function ChatUI({
           );
         },
       });
+
+      if (!stillHere()) return;
 
       // Mark streaming complete
       setMessages((prev) =>
@@ -204,6 +216,7 @@ export default function ChatUI({
       // Only answered messages count against the free allowance
       if (onNewMessage) onNewMessage();
     } catch (err: unknown) {
+      if (!stillHere()) return;
       // Remove the empty streaming placeholder
       setMessages((prev) => prev.filter((m) => m.id !== aiMsgId));
 
@@ -215,8 +228,10 @@ export default function ChatUI({
         setTimeout(() => navigate("/auth"), 2000);
       }
     } finally {
-      setIsStreaming(false);
-      textareaRef.current?.focus();
+      if (stillHere()) {
+        setIsStreaming(false);
+        textareaRef.current?.focus();
+      }
     }
   };
 
