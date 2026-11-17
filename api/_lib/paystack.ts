@@ -78,13 +78,14 @@ export async function confirmPayment(reference: string, expectedUserId?: string)
     return { status: 'mismatch', message: 'The amount paid does not match the Premium price.' }
   }
 
-  const days = Number(tx.metadata?.days) > 0 ? Math.round(Number(tx.metadata.days)) : PREMIUM_DAYS
+  // The pass length always comes from the server's own setting, never from
+  // payment metadata, which a payment made outside this site could set
   const { data, error } = await db.rpc('credit_premium', {
     p_reference: reference,
     p_user_id: userId,
     p_amount: Number(tx.amount),
     p_currency: tx.currency,
-    p_days: days,
+    p_days: PREMIUM_DAYS,
   })
   if (error || !data) {
     console.error('[paystack] credit failed', reference, error?.message)
