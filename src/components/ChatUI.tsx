@@ -144,8 +144,6 @@ export default function ChatUI({
     ]);
     setIsStreaming(true);
 
-    if (onNewMessage) onNewMessage();
-
     try {
       const result = await sendChatMessage({
         message: userContent,
@@ -175,6 +173,9 @@ export default function ChatUI({
 
       // Update usage display
       setUsageLeft(result.usageLeft);
+
+      // Only answered messages count against the free allowance
+      if (onNewMessage) onNewMessage();
     } catch (err: unknown) {
       // Remove the empty streaming placeholder
       setMessages((prev) => prev.filter((m) => m.id !== aiMsgId));

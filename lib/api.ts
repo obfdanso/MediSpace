@@ -38,7 +38,9 @@ export async function sendChatMessage(params: {
 }): Promise<ChatResult> {
   const headers = await authHeaders({ Accept: 'text/event-stream' })
 
-  const response = await fetch(`${BACKEND_URL}/api/chat`, {
+  let response: Response
+  try {
+    response = await fetch(`${BACKEND_URL}/api/chat`, {
     method: 'POST',
     headers,
     body: JSON.stringify({
@@ -47,6 +49,10 @@ export async function sendChatMessage(params: {
       topic: params.topic ?? undefined,
     }),
   })
+  } catch {
+    // fetch only rejects when the server can't be reached at all
+    throw new Error("Can't reach the MediSpace server right now. Check your connection and try again.")
+  }
 
   if (!response.ok) {
     const body = await response.json().catch(() => ({}))
