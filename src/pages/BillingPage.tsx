@@ -140,6 +140,14 @@ function PlanTab() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Coming back from Paystack with the Back button restores this page as it
+  // was, button still saying "Opening Paystack...", so reset it
+  useEffect(() => {
+    const onShow = (e: PageTransitionEvent) => { if (e.persisted) setPaying(false); };
+    window.addEventListener("pageshow", onShow);
+    return () => window.removeEventListener("pageshow", onShow);
+  }, []);
+
   const handlePay = async () => {
     setPaying(true);
     setMessage(null);
