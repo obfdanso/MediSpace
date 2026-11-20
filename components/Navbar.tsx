@@ -124,7 +124,7 @@ const Navbar = () => {
               </div>
               {!isScrolled && (
                 <span className="text-lg font-semibold text-gray-800 dark:text-gray-100 font-lobster">
-                  MediSpace AI
+                  MediSpace
                 </span>
               )}
             </Link>
