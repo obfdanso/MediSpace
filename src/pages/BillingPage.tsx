@@ -130,6 +130,9 @@ function PlanTab() {
           setMessage({ type: "error", text: result.message });
         }
       })
+      .catch(() => {
+        setMessage({ type: "info", text: "We couldn't confirm your payment just now. If you paid, Premium switches on by itself once Paystack confirms it, so check back in a few minutes." });
+      })
       .finally(() => {
         setChecking(false);
         setSearchParams({}, { replace: true });
