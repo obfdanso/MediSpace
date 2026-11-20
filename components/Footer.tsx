@@ -96,7 +96,7 @@ export default function Footer() {
           
           {/* Compliance Badges */}
           <div className="flex justify-center gap-6 mt-6 flex-wrap">
-            {['256-bit Encryption', 'Private by Design', 'Available 24/7'].map((badge) => (
+            {['Encrypted connections', 'Never sold or shared for ads', 'Available 24/7'].map((badge) => (
               <div
                 key={badge}
                 className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-full text-xs text-gray-600 dark:text-gray-400 hover:scale-105 transition-transform duration-200"
