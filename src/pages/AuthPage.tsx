@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTheme } from '@/components/ThemeProvider'
 import { useAuth } from '@/components/AuthContext'
+import { supabase } from '@/lib/supabase'
 import { ShieldCheck, Bot, FlaskConical, ClipboardList, Lock, Sun, Moon, ArrowRight } from 'lucide-react'
 
 type Tab = 'login' | 'signup'
@@ -16,6 +17,27 @@ export default function AuthPage() {
   const [loginPassword, setLoginPassword] = useState('')
   const [loginLoading, setLoginLoading] = useState(false)
   const [loginError, setLoginError] = useState('')
+  const [loginNotice, setLoginNotice] = useState('')
+  const [resetSending, setResetSending] = useState(false)
+
+  const handleForgotPassword = async () => {
+    setLoginError('')
+    setLoginNotice('')
+    if (!loginEmail.trim()) {
+      setLoginError('Type your email address above first, then click "Forgot password?" again.')
+      return
+    }
+    setResetSending(true)
+    const { error } = await supabase.auth.resetPasswordForEmail(loginEmail.trim(), {
+      redirectTo: `${window.location.origin}/reset-password`,
+    })
+    setResetSending(false)
+    if (error) {
+      setLoginError(error.message)
+      return
+    }
+    setLoginNotice(`If an account exists for ${loginEmail.trim()}, we've sent a link to reset your password. Check your inbox and spam folder.`)
+  }
   const [showLoginPassword, setShowLoginPassword] = useState(false)
 
   const [signupName, setSignupName] = useState('')
@@ -31,6 +53,7 @@ export default function AuthPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoginError('')
+    setLoginNotice('')
     if (!loginEmail || !loginPassword) {
       setLoginError('Please fill in all fields.')
       return
@@ -248,6 +271,11 @@ export default function AuthPage() {
                       {loginError}
                     </div>
                   )}
+                  {loginNotice && (
+                    <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-sm px-4 py-3 rounded-xl">
+                      {loginNotice}
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Email address</label>
@@ -270,6 +298,14 @@ export default function AuthPage() {
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">Password</label>
+                      <button
+                        type="button"
+                        onClick={handleForgotPassword}
+                        disabled={resetSending}
+                        className="text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:underline disabled:opacity-60"
+                      >
+                        {resetSending ? 'Sending...' : 'Forgot password?'}
+                      </button>
                     </div>
                     <div className="relative">
                       <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
