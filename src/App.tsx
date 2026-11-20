@@ -13,6 +13,7 @@ import SafetyPage from "./pages/SafetyPage";
 import AuthPage from "./pages/AuthPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import BillingPage from "./pages/BillingPage";
+import NotFoundPage from "./pages/NotFoundPage";
 import { TermsPage, PrivacyPage, RefundPage, DisclaimerPage } from "./pages/LegalPages";
 
 // Redirects to onboarding when user is logged in but hasn't completed it
@@ -73,6 +74,7 @@ function AppRoutes() {
       <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/refunds" element={<RefundPage />} />
       <Route path="/disclaimer" element={<DisclaimerPage />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )
 }
