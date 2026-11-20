@@ -93,6 +93,10 @@ export async function confirmPayment(reference: string, expectedUserId?: string)
     p_currency: tx.currency,
     p_days: PREMIUM_DAYS,
   })
+  if (error?.message?.includes('account_missing')) {
+    console.error('[paystack] paid but account is gone', reference, userId)
+    return { status: 'failed', message: 'The account this payment was for no longer exists.' }
+  }
   if (error || !data) {
     console.error('[paystack] credit failed', reference, error?.message)
     return { status: 'error', message: 'Payment received, but Premium could not be activated yet. It will retry automatically.' }

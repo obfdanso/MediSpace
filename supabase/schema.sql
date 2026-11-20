@@ -248,13 +248,19 @@ begin
   select premium_until into v_until from payments where reference = p_reference;
   if found then return v_until; end if;
 
+  -- A paying user whose profile row never got made gets one now; a deleted
+  -- account can't be credited, so say so and let the caller stop retrying
+  insert into profiles (id)
+    select p_user_id where exists (select 1 from auth.users where id = p_user_id)
+  on conflict (id) do nothing;
+
   -- Lock the profile so two credits for the same user can't overlap
   select greatest(coalesce(premium_until, now()), now()) + make_interval(days => p_days)
     into v_until
     from profiles where id = p_user_id
     for update;
   if v_until is null then
-    raise exception 'profile % not found', p_user_id;
+    raise exception 'account_missing: %', p_user_id;
   end if;
 
   insert into payments (reference, user_id, amount, currency, premium_until)
