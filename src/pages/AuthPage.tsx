@@ -166,7 +166,7 @@ export default function AuthPage() {
             Your health journey <br /> starts here
           </h2>
           <p className="text-white/70 text-lg mb-10">
-            Join thousands of users who trust MediSpace AI for smarter, safer health decisions.
+            Clear, private health answers whenever you need them.
           </p>
 
           <div className="space-y-3">
