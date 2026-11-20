@@ -36,6 +36,8 @@ export async function sendChatMessage(params: {
   conversationId?: string | null
   topic?: string | null
   onChunk: (chunk: string) => void
+  /** Called as soon as the reply is complete, before the stream closes */
+  onDone?: (result: ChatResult) => void
 }): Promise<ChatResult> {
   const headers = await authHeaders({ Accept: 'text/event-stream' })
 
@@ -68,9 +70,18 @@ export async function sendChatMessage(params: {
   const decoder = new TextDecoder()
   let buffer = ''
   let result: ChatResult = { conversationId: null, usageToday: 0, usageLeft: 0, usageLimit: 20 }
+  let gotDone = false
 
   while (true) {
-    const { done, value } = await reader.read()
+    let chunk: ReadableStreamReadResult<Uint8Array>
+    try {
+      chunk = await reader.read()
+    } catch (err) {
+      // The reply is already saved once "done" arrived; only the title was left
+      if (gotDone) break
+      throw err
+    }
+    const { done, value } = chunk
     if (done) break
 
     buffer += decoder.decode(value, { stream: true })
@@ -98,6 +109,8 @@ export async function sendChatMessage(params: {
             usageLeft: event.usageLeft ?? 0,
             usageLimit: event.usageLimit ?? 20,
           }
+          gotDone = true
+          params.onDone?.(result)
         } else if (event.type === 'error') {
           throw new Error(event.message ?? 'Stream error')
         }

@@ -205,11 +205,23 @@ export default function ChatUI({
             )
           );
         },
+        // Unlock as soon as the reply is complete; a new chat's title is
+        // still being written on the server after this
+        onDone: (done) => {
+          if (!stillHere()) return;
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === aiMsgId ? { ...m, streaming: false } : m
+            )
+          );
+          setUsage({ left: done.usageLeft, limit: done.usageLimit });
+          setIsStreaming(false);
+        },
       });
 
       if (!stillHere()) return;
 
-      // Mark streaming complete
+      // In case the stream ended without a "done" event
       setMessages((prev) =>
         prev.map((m) =>
           m.id === aiMsgId ? { ...m, streaming: false } : m
@@ -542,10 +554,16 @@ function closeOpenMarkers(text: string): string {
 // Splits on blank lines (never inside a code block) and memoises each block,
 // so while a reply types out only the last paragraph is re-parsed.
 
+// A blank line only ends a block when what follows can't belong to a list
+// above it: indented lines and new list items stay with the list, otherwise
+// loose lists would lose their nesting or turn into code blocks.
+const LIST_ITEM = /^\s*([-*+]|\d+[.)])\s/;
+
 function splitBlocks(text: string): string[] {
   const blocks: string[] = [];
   let current: string[] = [];
   let inFence = false;
+  let blankPending = false;
   for (const line of text.split("\n")) {
     const isFence = /^\s*```/.test(line);
     if (!inFence && line.trim() === "") {
@@ -562,16 +580,12 @@ function splitBlocks(text: string): string[] {
       }
       blankPending = false;
     }
-// A blank line only ends a block when what follows can't belong to a list
-// above it: indented lines and new list items stay with the list, otherwise
-// loose lists would lose their nesting or turn into code blocks.
-const LIST_ITEM = /^\s*([-*+]|\d+[.)])\s/;
-
+    if (isFence) inFence = !inFence;
+    current.push(line);
   }
   if (current.length) blocks.push(current.join("\n"));
   return blocks;
 }
-  let blankPending = false;
 
 const MarkdownBlock = memo(function MarkdownBlock({ text }: { text: string }) {
   return (
@@ -580,8 +594,6 @@ const MarkdownBlock = memo(function MarkdownBlock({ text }: { text: string }) {
     </ReactMarkdown>
   );
 });
-    if (isFence) inFence = !inFence;
-    current.push(line);
 
 function Markdown({ text }: { text: string }) {
   return (

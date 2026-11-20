@@ -197,14 +197,9 @@ export async function POST(req: Request): Promise<Response> {
         }
 
         if (db && conversationId && reply) {
-          // A new chat gets a short AI-written title, saved before "done" so
-          // the sidebar shows it as soon as it refreshes
-          const title = isNewConversation ? await writeTitle(apiKey, message, reply, fallbackModel ?? env('GROQ_MODEL') ?? DEFAULT_MODEL) : null
           await Promise.all([
             db.from('messages').insert({ conversation_id: conversationId, role: 'assistant', content: reply }),
-            db.from('conversations')
-              .update({ updated_at: new Date().toISOString(), ...(title ? { title } : {}) })
-              .eq('id', conversationId),
+            db.from('conversations').update({ updated_at: new Date().toISOString() }).eq('id', conversationId),
           ])
         }
 
@@ -215,6 +210,18 @@ export async function POST(req: Request): Promise<Response> {
           usageLimit: limit,
           usageLeft: Math.max(0, limit - usedToday),
         })
+
+        // A new chat gets a short AI-written title. It's written after "done"
+        // so the reply unlocks at once; the stream stays open until it's saved
+        // so the sidebar shows it when it refreshes at the end
+        if (db && conversationId && reply && isNewConversation) {
+          try {
+            const title = await writeTitle(apiKey, message, reply, fallbackModel ?? env('GROQ_MODEL') ?? DEFAULT_MODEL)
+            if (title) await db.from('conversations').update({ title }).eq('id', conversationId)
+          } catch (err) {
+            console.error('[chat] title failed', err)
+          }
+        }
         write('data: [DONE]\n\n')
       } catch (err) {
         console.error('[chat] stream error', err)
