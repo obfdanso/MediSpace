@@ -4,12 +4,15 @@ import { BrowserRouter } from "react-router-dom";
 import { Analytics } from "@vercel/analytics/react";
 
 import App from "./App";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import "../app/globals.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter>
-      <App />
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
       <Analytics />
     </BrowserRouter>
   </React.StrictMode>
