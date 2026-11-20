@@ -2,6 +2,7 @@ import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import { supabase } from "@/lib/supabase";
 import AuroraShaders from "@/components/ui/aurora";
+import { SUPPORT_EMAIL } from "@/lib/site";
 
 export default function ContactPage() {
   const [name, setName] = useState("");
@@ -36,9 +37,14 @@ export default function ContactPage() {
       <Navbar />
       <div className="pt-32 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-6 text-center">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4 text-center">
             Contact Us
           </h1>
+          <p className="text-center text-gray-600 dark:text-gray-400 mb-8">
+            Email us at{" "}
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="text-emerald-600 dark:text-emerald-400 hover:underline">{SUPPORT_EMAIL}</a>
+            {" "}or use the form below. We usually reply within 2 working days.
+          </p>
           <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm rounded-xl p-8 border border-gray-200 dark:border-gray-800">
             <form onSubmit={handleSubmit} className="space-y-6">
               {status && (
