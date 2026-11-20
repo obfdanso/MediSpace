@@ -52,7 +52,8 @@ export type ConfirmResult =
   | { status: 'credited'; premiumUntil: string }
   | { status: 'pending' | 'failed' | 'mismatch' | 'error'; message: string }
 
-const PENDING = new Set(['abandoned', 'ongoing', 'pending', 'processing', 'queued'])
+// 'abandoned' means the checkout was closed without paying, so it isn't pending
+const PENDING = new Set(['ongoing', 'pending', 'processing', 'queued'])
 
 /**
  * Asks Paystack whether a payment succeeded and, if so, credits Premium.
@@ -71,6 +72,7 @@ export async function confirmPayment(reference: string, expectedUserId?: string)
 
   const tx = body.data
   if (PENDING.has(tx.status)) return { status: 'pending', message: 'Your payment is still processing.' }
+  if (tx.status === 'abandoned') return { status: 'failed', message: 'The payment was not completed, so nothing was charged.' }
   if (tx.status !== 'success') return { status: 'failed', message: 'The payment did not go through.' }
 
   const userId: string | undefined = tx.metadata?.user_id
