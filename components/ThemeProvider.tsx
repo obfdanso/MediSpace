@@ -13,7 +13,7 @@ const systemQuery = () => window.matchMedia('(prefers-color-scheme: dark)')
 
 function readSaved(): Theme | null {
   try {
-    const saved = localStorage.getItem('theme')
+    const saved = sessionStorage.getItem('theme')
     if (saved === 'light' || saved === 'dark') return saved
   } catch { /* storage unavailable */ }
   return null
@@ -26,7 +26,7 @@ function applyTheme(theme: Theme) {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  // Follow the system theme unless the user has picked one with the toggle
+  // Follow the device theme; the toggle only overrides it for this visit
   const [theme, setTheme] = useState<Theme>(() => {
     const initial = readSaved() ?? (systemQuery().matches ? 'dark' : 'light')
     // Applied here, not in an effect, so the first paint already has the class
@@ -38,11 +38,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     applyTheme(theme)
   }, [theme])
 
-  // Track OS theme changes while there is no manual override
+  // When the device switches theme, follow it again even if the toggle was
+  // used earlier, so the site always ends up matching the device
   useEffect(() => {
     const query = systemQuery()
     const onChange = (e: MediaQueryListEvent) => {
-      if (!readSaved()) setTheme(e.matches ? 'dark' : 'light')
+      try { sessionStorage.removeItem('theme') } catch { /* storage unavailable */ }
+      setTheme(e.matches ? 'dark' : 'light')
     }
     query.addEventListener('change', onChange)
     return () => query.removeEventListener('change', onChange)
@@ -51,7 +53,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const toggleTheme = () => {
     setTheme(prev => {
       const next = prev === 'light' ? 'dark' : 'light'
-      try { localStorage.setItem('theme', next) } catch { /* storage unavailable */ }
+      try { sessionStorage.setItem('theme', next) } catch { /* storage unavailable */ }
       return next
     })
   }
