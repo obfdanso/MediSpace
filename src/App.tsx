@@ -15,6 +15,7 @@ const AuthPage = lazy(() => import("./pages/AuthPage"));
 const OnboardingPage = lazy(() => import("./pages/OnboardingPage"));
 const BillingPage = lazy(() => import("./pages/BillingPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
+const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
 // Pages load only when opened, so the first visit downloads less
 const legal = () => import("./pages/LegalPages");
 const TermsPage = lazy(() => legal().then((m) => ({ default: m.TermsPage })));
@@ -77,6 +78,7 @@ const TITLES: Record<string, string> = {
   "/": "MediSpace - AI Health Assistant",
   "/auth": "Sign in",
   "/auth/callback": "Signing in",
+  "/reset-password": "Reset password",
   "/services": "Features",
   "/onboarding": "Set up your profile",
   "/chat": "Chat",
@@ -107,6 +109,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/auth" element={<AuthGuard><AuthPage /></AuthGuard>} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/auth/callback" element={<AuthCallbackPage />} />
       <Route path="/onboarding" element={<OnboardingPage />} />
       <Route path="/chat" element={<OnboardingGuard><Chat /></OnboardingGuard>} />
