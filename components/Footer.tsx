@@ -26,7 +26,7 @@ export default function Footer() {
           <div>
             <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Product</h3>
             <ul className="space-y-3">
-              {[{ label: 'Features', to: '/features' }, { label: 'Services', to: '/services' }, { label: 'AI Chat', to: '/chat' }].map((item) => (
+              {[{ label: 'Features', to: '/features' }, { label: 'AI Chat', to: '/chat' }].map((item) => (
                 <li key={item.to}>
                   <Link
                     to={item.to}

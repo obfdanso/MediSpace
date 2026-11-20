@@ -10,7 +10,6 @@ import ContactPage from "./pages/ContactPage";
 import FeaturesPage from "./pages/FeaturesPage";
 import FaqPage from "./pages/FaqPage";
 import SafetyPage from "./pages/SafetyPage";
-import ServicesPage from "./pages/ServicesPage";
 import AuthPage from "./pages/AuthPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import BillingPage from "./pages/BillingPage";
@@ -68,7 +67,7 @@ function AppRoutes() {
       <Route path="/features" element={<FeaturesPage />} />
       <Route path="/faq" element={<FaqPage />} />
       <Route path="/safety" element={<SafetyPage />} />
-      <Route path="/services" element={<ServicesPage />} />
+      <Route path="/services" element={<Navigate to="/features" replace />} />
       <Route path="/billing" element={<BillingPage />} />
       <Route path="/terms" element={<TermsPage />} />
       <Route path="/privacy" element={<PrivacyPage />} />
