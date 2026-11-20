@@ -8,7 +8,6 @@ import {
   FileSearch,
   FlaskConical,
   ShieldCheck,
-  GraduationCap,
   Pill,
   ShieldAlert,
   Sparkles,
@@ -287,19 +286,19 @@ export default function LandingPage() {
           className="text-center mb-16"
         >
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4 leading-tight font-pt-serif">
-            Built for Students Who Need Fast & Safe Medical Guidance
+            Clear Health Answers for Everyday Questions
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            Helping students make informed decisions about medications without unnecessary trips to the pharmacy.
+            Understand your symptoms and medicines, and know what to ask your doctor or pharmacist.
           </p>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
-            { title: 'Students', desc: 'Quickly access drug information for common illnesses on campus.', Icon: GraduationCap },
-            { title: 'Self-Medication Support', desc: 'Get guidance on what medications to take for minor health issues.', Icon: Pill },
-            { title: 'Safe Drug Usage', desc: 'Avoid harmful drug combinations and incorrect dosage.', Icon: ShieldAlert },
-            { title: 'AI Assistance', desc: 'Ask health-related questions and get instant AI-powered responses.', Icon: Sparkles }
+            { title: 'Know Your Medicines', desc: 'Learn what a medicine is for, how to take it and which side effects to watch for.', Icon: Pill },
+            { title: 'Make Sense of Symptoms', desc: 'Explore possible causes and get a clear sense of when to see a doctor.', Icon: FileSearch },
+            { title: 'Check Combinations', desc: 'Spot medicines that may not mix well, so you can raise it with your pharmacist.', Icon: ShieldAlert },
+            { title: 'Answers Any Time', desc: 'Ask health questions day or night and get a clear answer in seconds.', Icon: Sparkles }
           ].map((item, i) => (
             <motion.div
               key={item.title}
