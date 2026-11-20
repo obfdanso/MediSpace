@@ -547,17 +547,31 @@ function splitBlocks(text: string): string[] {
   let current: string[] = [];
   let inFence = false;
   for (const line of text.split("\n")) {
-    if (/^\s*```/.test(line)) inFence = !inFence;
-    if (!inFence && line.trim() === "" && current.length) {
-      blocks.push(current.join("\n"));
-      current = [];
-    } else if (inFence || line.trim() !== "") {
-      current.push(line);
+    const isFence = /^\s*```/.test(line);
+    if (!inFence && line.trim() === "") {
+      if (current.length) blankPending = true;
+      continue;
     }
+    if (blankPending) {
+      const inList = current.some((l) => LIST_ITEM.test(l));
+      if (inList && (/^\s/.test(line) || LIST_ITEM.test(line))) {
+        current.push("");
+      } else {
+        blocks.push(current.join("\n"));
+        current = [];
+      }
+      blankPending = false;
+    }
+// A blank line only ends a block when what follows can't belong to a list
+// above it: indented lines and new list items stay with the list, otherwise
+// loose lists would lose their nesting or turn into code blocks.
+const LIST_ITEM = /^\s*([-*+]|\d+[.)])\s/;
+
   }
   if (current.length) blocks.push(current.join("\n"));
   return blocks;
 }
+  let blankPending = false;
 
 const MarkdownBlock = memo(function MarkdownBlock({ text }: { text: string }) {
   return (
@@ -566,6 +580,8 @@ const MarkdownBlock = memo(function MarkdownBlock({ text }: { text: string }) {
     </ReactMarkdown>
   );
 });
+    if (isFence) inFence = !inFence;
+    current.push(line);
 
 function Markdown({ text }: { text: string }) {
   return (
