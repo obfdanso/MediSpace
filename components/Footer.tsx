@@ -60,7 +60,7 @@ export default function Footer() {
           <div>
             <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Support</h3>
             <ul className="space-y-3">
-              {[{ label: 'FAQ', to: '/faq' }, { label: 'Safety & Privacy', to: '/safety' }].map((item) => (
+              {[{ label: 'FAQ', to: '/faq' }, { label: 'Safety & Privacy', to: '/safety' }, { label: 'Medical Disclaimer', to: '/disclaimer' }].map((item) => (
                 <li key={item.to}>
                   <Link
                     to={item.to}
@@ -82,7 +82,7 @@ export default function Footer() {
               © 2026 MediSpace AI. All rights reserved.
             </p>
             <div className="flex gap-6">
-              {[{ label: 'Safety & Privacy', to: '/safety' }].map((item) => (
+              {[{ label: 'Terms', to: '/terms' }, { label: 'Privacy', to: '/privacy' }, { label: 'Refunds', to: '/refunds' }].map((item) => (
                 <Link
                   key={item.to}
                   to={item.to}

@@ -432,9 +432,9 @@ export default function AuthPage() {
 
                   <p className="text-xs text-gray-500 dark:text-gray-400">
                     By signing up, you agree to our{' '}
-                    <span className="text-emerald-600 dark:text-emerald-400 cursor-pointer hover:underline font-medium">Terms of Service</span>
+                    <Link to="/terms" target="_blank" className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium">Terms of Service</Link>
                     {' '}and{' '}
-                    <span className="text-emerald-600 dark:text-emerald-400 cursor-pointer hover:underline font-medium">Privacy Policy</span>.
+                    <Link to="/privacy" target="_blank" className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium">Privacy Policy</Link>.
                   </p>
 
                   <button
