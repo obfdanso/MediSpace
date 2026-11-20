@@ -1,21 +1,37 @@
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AuthProvider } from "@/components/AuthContext";
 import { useAuth } from "@/components/AuthContext";
 
 import HomePage from "./pages/HomePage";
-import Chat from "./pages/Chat";
-import AboutPage from "./pages/AboutPage";
-import ContactPage from "./pages/ContactPage";
-import FeaturesPage from "./pages/FeaturesPage";
-import FaqPage from "./pages/FaqPage";
-import SafetyPage from "./pages/SafetyPage";
-import AuthPage from "./pages/AuthPage";
-import OnboardingPage from "./pages/OnboardingPage";
-import BillingPage from "./pages/BillingPage";
-import NotFoundPage from "./pages/NotFoundPage";
-import { TermsPage, PrivacyPage, RefundPage, DisclaimerPage } from "./pages/LegalPages";
+const Chat = lazy(() => import("./pages/Chat"));
+const AboutPage = lazy(() => import("./pages/AboutPage"));
+const ContactPage = lazy(() => import("./pages/ContactPage"));
+const FeaturesPage = lazy(() => import("./pages/FeaturesPage"));
+const FaqPage = lazy(() => import("./pages/FaqPage"));
+const SafetyPage = lazy(() => import("./pages/SafetyPage"));
+const AuthPage = lazy(() => import("./pages/AuthPage"));
+const OnboardingPage = lazy(() => import("./pages/OnboardingPage"));
+const BillingPage = lazy(() => import("./pages/BillingPage"));
+const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
+// Pages load only when opened, so the first visit downloads less
+const legal = () => import("./pages/LegalPages");
+const TermsPage = lazy(() => legal().then((m) => ({ default: m.TermsPage })));
+const PrivacyPage = lazy(() => legal().then((m) => ({ default: m.PrivacyPage })));
+const RefundPage = lazy(() => legal().then((m) => ({ default: m.RefundPage })));
+const DisclaimerPage = lazy(() => legal().then((m) => ({ default: m.DisclaimerPage })));
+
+function PageSpinner() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-950">
+      <svg className="animate-spin w-8 h-8 text-emerald-600" fill="none" viewBox="0 0 24 24">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+      </svg>
+    </div>
+  )
+}
 
 // Redirects to onboarding when user is logged in but hasn't completed it
 // Also handles the case where profile is null (no DB row yet after signup)
@@ -87,6 +103,7 @@ function usePageTitle() {
 function AppRoutes() {
   usePageTitle();
   return (
+    <Suspense fallback={<PageSpinner />}>
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/auth" element={<AuthGuard><AuthPage /></AuthGuard>} />
@@ -106,6 +123,7 @@ function AppRoutes() {
       <Route path="/disclaimer" element={<DisclaimerPage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
+    </Suspense>
   )
 }
 
