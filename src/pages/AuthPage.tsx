@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useTheme } from '@/components/ThemeProvider'
 import { useAuth } from '@/components/AuthContext'
 import { supabase } from '@/lib/supabase'
-import { ShieldCheck, Bot, FlaskConical, ClipboardList, Lock, Sun, Moon, ArrowRight } from 'lucide-react'
+import { ShieldCheck, Sparkles, FlaskConical, ClipboardList, Lock, Sun, Moon, ArrowRight } from 'lucide-react'
 
 type Tab = 'login' | 'signup'
 
@@ -195,7 +195,7 @@ export default function AuthPage() {
           <div className="space-y-3">
             {[
               { icon: ShieldCheck, text: 'Private and Secure' },
-              { icon: Bot, text: 'AI-Powered Medical Insights' },
+              { icon: Sparkles, text: 'AI-Powered Medical Insights' },
               { icon: FlaskConical, text: 'Drug Interaction Checker' },
               { icon: ClipboardList, text: 'Symptom Analysis' },
             ].map(({ icon: Icon, text }) => (
@@ -512,7 +512,7 @@ export default function AuthPage() {
                   256-bit Encrypted
                 </div>
                 <div className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
-                  <Bot className="w-3.5 h-3.5 text-emerald-500" />
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
                   24/7 Available
                 </div>
               </div>
