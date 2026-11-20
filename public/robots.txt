@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /chat
+Disallow: /billing
+Disallow: /onboarding
+Disallow: /auth/callback
+
+Sitemap: https://medi-space.vercel.app/sitemap.xml
