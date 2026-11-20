@@ -509,7 +509,7 @@ export default function AuthPage() {
                 </div>
                 <div className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
                   <Lock className="w-3.5 h-3.5 text-emerald-500" />
-                  256-bit Encrypted
+                  Encrypted connections
                 </div>
                 <div className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
                   <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
