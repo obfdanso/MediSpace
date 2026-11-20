@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { useEffect } from "react";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AuthProvider } from "@/components/AuthContext";
 import { useAuth } from "@/components/AuthContext";
@@ -55,7 +56,36 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
+// Gives each page its own browser tab title
+const TITLES: Record<string, string> = {
+  "/": "MediSpace - AI Health Assistant",
+  "/auth": "Sign in",
+  "/auth/callback": "Signing in",
+  "/services": "Features",
+  "/onboarding": "Set up your profile",
+  "/chat": "Chat",
+  "/about": "About",
+  "/contact": "Contact",
+  "/features": "Features",
+  "/faq": "FAQ",
+  "/safety": "Safety & Privacy",
+  "/billing": "Plans & Billing",
+  "/terms": "Terms of Service",
+  "/privacy": "Privacy Policy",
+  "/refunds": "Refund Policy",
+  "/disclaimer": "Medical Disclaimer",
+};
+
+function usePageTitle() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    const title = TITLES[pathname];
+    document.title = pathname === "/" ? TITLES["/"] : `${title ?? "Page not found"} | MediSpace`;
+  }, [pathname]);
+}
+
 function AppRoutes() {
+  usePageTitle();
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
