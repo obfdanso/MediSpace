@@ -14,6 +14,7 @@ import ServicesPage from "./pages/ServicesPage";
 import AuthPage from "./pages/AuthPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import BillingPage from "./pages/BillingPage";
+import { TermsPage, PrivacyPage, RefundPage, DisclaimerPage } from "./pages/LegalPages";
 
 // Redirects to onboarding when user is logged in but hasn't completed it
 // Also handles the case where profile is null (no DB row yet after signup)
@@ -69,6 +70,10 @@ function AppRoutes() {
       <Route path="/safety" element={<SafetyPage />} />
       <Route path="/services" element={<ServicesPage />} />
       <Route path="/billing" element={<BillingPage />} />
+      <Route path="/terms" element={<TermsPage />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
+      <Route path="/refunds" element={<RefundPage />} />
+      <Route path="/disclaimer" element={<DisclaimerPage />} />
     </Routes>
   )
 }
