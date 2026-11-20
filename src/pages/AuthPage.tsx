@@ -131,7 +131,7 @@ export default function AuthPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
           </div>
-          <span className="text-white text-xl font-bold font-lobster">MediSpace AI</span>
+          <span className="text-white text-xl font-bold font-lobster">MediSpace</span>
         </Link>
 
         <div className="flex items-center gap-3">
@@ -201,7 +201,7 @@ export default function AuthPage() {
               {activeTab === 'login' ? (
                 <>
                   <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">Welcome back</h1>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">Sign in to continue to MediSpace AI</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">Sign in to continue to MediSpace</p>
                 </>
               ) : (
                 <>

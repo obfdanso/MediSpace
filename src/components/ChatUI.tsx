@@ -351,7 +351,7 @@ export default function ChatUI({
       </div>
 
       <p className="mt-2 text-center text-[11px] text-stone-400 dark:text-stone-500">
-        MediSpace AI can make mistakes and is not a substitute for professional medical advice.
+        MediSpace can make mistakes and is not a substitute for professional medical advice.
         {!isLoggedIn && (
           <>
             {" "}
@@ -370,7 +370,7 @@ export default function ChatUI({
       {/* Slim top bar */}
       <div className="flex items-center justify-between gap-3 pl-14 md:pl-5 pr-4 h-14 shrink-0">
         <span className="text-sm font-medium text-stone-500 dark:text-stone-400 truncate">
-          {isEmpty ? "" : "MediSpace AI"}
+          {isEmpty ? "" : "MediSpace"}
         </span>
         <div className="flex items-center gap-2">
           {!isLoggedIn ? (
